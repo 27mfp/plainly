@@ -4,7 +4,17 @@
   const enabledEl = document.getElementById("enabled");
   const inputEl = document.getElementById("input");
   const outputEl = document.getElementById("output");
+  const versionEl = document.getElementById("version");
   const D = globalThis.Base64Decoder;
+
+  try {
+    const manifest = chrome.runtime.getManifest();
+    if (manifest && manifest.version && versionEl) {
+      versionEl.textContent = "v" + manifest.version;
+    }
+  } catch {
+    /* ignore outside extension */
+  }
 
   chrome.storage.sync.get({ enabled: true }, (data) => {
     enabledEl.checked = data.enabled !== false;

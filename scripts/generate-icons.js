@@ -1,104 +1,51 @@
 /**
- * Generate simple PNG icons without external deps (pure Node).
+ * Resize icons/icon-source.jpg into Chrome extension sizes.
+ * Requires: Python + Pillow  (or run: npm run icons)
+ *
+ * Usage: node scripts/generate-icons.js
  */
-const fs = require("fs");
+const { spawnSync } = require("child_process");
 const path = require("path");
-const zlib = require("zlib");
+const fs = require("fs");
 
-function crc32(buf) {
-  let c = ~0;
-  for (let i = 0; i < buf.length; i++) {
-    c ^= buf[i];
-    for (let k = 0; k < 8; k++) {
-      c = c & 1 ? (0xedb88320 ^ (c >>> 1)) : c >>> 1;
-    }
-  }
-  return ~c >>> 0;
-}
+const root = path.join(__dirname, "..");
+const py = `
+from PIL import Image
+from pathlib import Path
 
-function chunk(type, data) {
-  const typeBuf = Buffer.from(type, "ascii");
-  const len = Buffer.alloc(4);
-  len.writeUInt32BE(data.length, 0);
-  const crcBuf = Buffer.alloc(4);
-  const crcData = Buffer.concat([typeBuf, data]);
-  crcBuf.writeUInt32BE(crc32(crcData), 0);
-  return Buffer.concat([len, typeBuf, data, crcBuf]);
-}
+root = Path(r${JSON.stringify(root)})
+src = root / "icons" / "icon-source.jpg"
+if not src.exists():
+    src = root / "icons" / "icon512.png"
+if not src.exists():
+    raise SystemExit("Missing icons/icon-source.jpg or icons/icon512.png")
 
-function createPng(size) {
-  // Solid green rounded-ish square with simple "64" feel via two blocks
-  const rows = [];
-  for (let y = 0; y < size; y++) {
-    const row = Buffer.alloc(1 + size * 4);
-    row[0] = 0; // filter none
-    for (let x = 0; x < size; x++) {
-      const nx = x / (size - 1);
-      const ny = y / (size - 1);
-      // margin
-      const m = 0.08;
-      const inside = nx > m && nx < 1 - m && ny > m && ny < 1 - m;
-      // soft corner distance
-      const cx = Math.min(nx - m, 1 - m - nx, ny - m, 1 - m - ny);
-      const cornerCut = cx < 0.06 && (nx < 0.2 || nx > 0.8) && (ny < 0.2 || ny > 0.8);
+out = root / "icons"
+img = Image.open(src).convert("RGBA")
+zinc = (24, 24, 27, 255)
+bg = Image.new("RGBA", img.size, zinc)
+px = img.load()
+w, h = img.size
+for y in range(h):
+    for x in range(w):
+        r, g, b, a = px[x, y]
+        if r > 240 and g > 240 and b > 240:
+            px[x, y] = zinc
+composed = Image.alpha_composite(bg, img)
+master = composed.resize((512, 512), Image.Resampling.LANCZOS)
+master.save(out / "icon512.png")
+for size in (16, 32, 48, 128):
+    composed.resize((size, size), Image.Resampling.LANCZOS).save(out / f"icon{size}.png")
+print("icons ok")
+`;
 
-      let r = 0,
-        g = 0,
-        b = 0,
-        a = 0;
-      if (inside && !cornerCut) {
-        // slate surface (#1e293b → #0f172a)
-        r = Math.round(30 - ny * 8);
-        g = Math.round(41 - ny * 8);
-        b = Math.round(59 - ny * 10);
-        a = 255;
-        // light "64" bars
-        const bar1 =
-          nx > 0.28 && nx < 0.42 && ny > 0.28 && ny < 0.72;
-        const bar2 =
-          nx > 0.48 && nx < 0.72 && ny > 0.28 && ny < 0.42;
-        const bar3 =
-          nx > 0.48 && nx < 0.62 && ny > 0.42 && ny < 0.72;
-        if (bar1 || bar2 || bar3) {
-          r = 226;
-          g = 232;
-          b = 240; // slate-200
-        }
-      }
-      const i = 1 + x * 4;
-      row[i] = r;
-      row[i + 1] = g;
-      row[i + 2] = b;
-      row[i + 3] = a;
-    }
-    rows.push(row);
-  }
+const result = spawnSync("python", ["-c", py], {
+  encoding: "utf8",
+  cwd: root,
+});
 
-  const raw = Buffer.concat(rows);
-  const compressed = zlib.deflateSync(raw);
-
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(size, 0);
-  ihdr.writeUInt32BE(size, 4);
-  ihdr[8] = 8; // bit depth
-  ihdr[9] = 6; // RGBA
-  ihdr[10] = 0;
-  ihdr[11] = 0;
-  ihdr[12] = 0;
-
-  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-  return Buffer.concat([
-    signature,
-    chunk("IHDR", ihdr),
-    chunk("IDAT", compressed),
-    chunk("IEND", Buffer.alloc(0)),
-  ]);
-}
-
-const outDir = path.join(__dirname, "..", "icons");
-fs.mkdirSync(outDir, { recursive: true });
-for (const size of [16, 48, 128]) {
-  const file = path.join(outDir, `icon${size}.png`);
-  fs.writeFileSync(file, createPng(size));
-  console.log("wrote", file);
+if (result.stdout) process.stdout.write(result.stdout);
+if (result.stderr) process.stderr.write(result.stderr);
+if (result.status !== 0) {
+  process.exit(result.status || 1);
 }

@@ -3,16 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Plain Text Helper</title>
+    <title>Plainly</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <header>
-      <div class="logo" aria-hidden="true">Aa</div>
-      <div>
-        <h1>Plain Text Helper</h1>
-        <p class="sub">Makes coded text readable on Reddit</p>
+      <div class="logo" aria-hidden="true">
+        <img src="icons/icon48.png" width="36" height="36" alt="" />
       </div>
+      <div class="brand">
+        <h1>Plainly</h1>
+        <p class="sub">Coded text → plain text on Reddit</p>
+      </div>
+      <span class="version" id="version">v1.2.0</span>
     </header>
 
     <label class="toggle-row">
@@ -33,7 +36,13 @@
     </section>
 
     <footer>
-      <span>On Reddit, plain text shows next to coded lines. Click a link to open it, or the icon to copy.</span>
+      <span
+        >On Reddit, plain text appears next to coded lines. Open a link or use
+        the copy icon.</span
+      >
+      <div class="footer-row">
+        <span>Open source · MIT</span>
+      </div>
     </footer>
 
     <script src="src/decoder.js"></script>

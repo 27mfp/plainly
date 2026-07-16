@@ -1,4 +1,4 @@
-/* Base64 Decoder — minimal slate badges for Reddit */
+/* Plainly — zinc tags on Reddit */
 
 .b64d-wrap {
   display: inline;
@@ -7,18 +7,18 @@
 .b64d-original {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   word-break: break-all;
-  opacity: 0.72;
+  opacity: 0.7;
 }
 
-/* Soft slate chip */
+/* Soft zinc chip */
 .b64d-badge {
-  --b64d-fg: #334155;
-  --b64d-muted: #64748b;
-  --b64d-bg: #f1f5f9;
-  --b64d-bg-hover: #e2e8f0;
-  --b64d-ring: rgb(15 23 42 / 0.08);
-  --b64d-link: #0f172a;
-  --b64d-copied: #0f766e;
+  --b64d-fg: #3f3f46; /* zinc-700 */
+  --b64d-muted: #71717a; /* zinc-500 */
+  --b64d-bg: #f4f4f5; /* zinc-100 */
+  --b64d-bg-hover: #e4e4e7; /* zinc-200 */
+  --b64d-ring: rgb(24 24 27 / 0.08);
+  --b64d-link: #18181b; /* zinc-900 */
+  --b64d-copied: #3f3f46;
 
   display: inline-flex;
   align-items: center;
@@ -36,7 +36,7 @@
   border-radius: 6px;
   box-shadow:
     0 0 0 1px var(--b64d-ring),
-    0 1px 2px rgb(15 23 42 / 0.06);
+    0 1px 2px rgb(24 24 27 / 0.05);
   cursor: default;
   user-select: text;
   transition-property: background-color, box-shadow, transform, opacity;
@@ -48,16 +48,16 @@
 .b64d-badge:hover {
   background: var(--b64d-bg-hover);
   box-shadow:
-    0 0 0 1px rgb(15 23 42 / 0.12),
-    0 2px 6px rgb(15 23 42 / 0.08);
+    0 0 0 1px rgb(24 24 27 / 0.12),
+    0 2px 6px rgb(24 24 27 / 0.07);
 }
 
 .b64d-badge.b64d-copied {
-  --b64d-fg: var(--b64d-copied);
-  --b64d-muted: #0d9488;
-  --b64d-bg: #f0fdfa;
-  --b64d-bg-hover: #ccfbf1;
-  --b64d-ring: rgb(13 148 136 / 0.22);
+  --b64d-fg: #27272a;
+  --b64d-muted: #52525b;
+  --b64d-bg: #e4e4e7;
+  --b64d-bg-hover: #d4d4d8;
+  --b64d-ring: rgb(24 24 27 / 0.14);
 }
 
 .b64d-label {
@@ -68,7 +68,7 @@
   text-transform: none;
   color: var(--b64d-muted);
   line-height: 1;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .b64d-decoded {
@@ -91,16 +91,15 @@ a.b64d-decoded {
 
 a.b64d-decoded:hover {
   text-decoration: underline;
-  text-decoration-color: rgb(100 116 139 / 0.7);
+  text-decoration-color: rgb(113 113 122 / 0.75);
 }
 
 a.b64d-decoded:focus-visible {
-  outline: 2px solid #94a3b8;
+  outline: 2px solid #a1a1aa;
   outline-offset: 2px;
   border-radius: 2px;
 }
 
-/* Copy control — quiet until hover */
 .b64d-copy {
   flex-shrink: 0;
   display: inline-grid;
@@ -126,7 +125,7 @@ a.b64d-decoded:focus-visible {
 }
 
 .b64d-copy:hover {
-  background: rgb(15 23 42 / 0.06);
+  background: rgb(24 24 27 / 0.06);
   color: var(--b64d-fg);
 }
 
@@ -135,7 +134,7 @@ a.b64d-decoded:focus-visible {
 }
 
 .b64d-copy:focus-visible {
-  outline: 2px solid #94a3b8;
+  outline: 2px solid #a1a1aa;
   outline-offset: 1px;
 }
 
@@ -185,24 +184,24 @@ a.b64d-decoded:focus-visible {
   }
 }
 
-/* Prefer dark chip on Reddit dark / system dark */
+/* Dark surfaces */
 @media (prefers-color-scheme: dark) {
   .b64d-badge {
-    --b64d-fg: #e2e8f0;
-    --b64d-muted: #94a3b8;
-    --b64d-bg: #1e293b;
-    --b64d-bg-hover: #334155;
+    --b64d-fg: #e4e4e7; /* zinc-200 */
+    --b64d-muted: #a1a1aa; /* zinc-400 */
+    --b64d-bg: #27272a; /* zinc-800 */
+    --b64d-bg-hover: #3f3f46; /* zinc-700 */
     --b64d-ring: rgb(255 255 255 / 0.08);
-    --b64d-link: #f1f5f9;
-    --b64d-copied: #5eead4;
+    --b64d-link: #fafafa;
+    --b64d-copied: #f4f4f5;
   }
 
   .b64d-badge.b64d-copied {
-    --b64d-fg: #99f6e4;
-    --b64d-muted: #5eead4;
-    --b64d-bg: #134e4a;
-    --b64d-bg-hover: #115e59;
-    --b64d-ring: rgb(45 212 191 / 0.28);
+    --b64d-fg: #fafafa;
+    --b64d-muted: #d4d4d8;
+    --b64d-bg: #3f3f46;
+    --b64d-bg-hover: #52525b;
+    --b64d-ring: rgb(255 255 255 / 0.14);
   }
 
   .b64d-copy:hover {
@@ -210,29 +209,28 @@ a.b64d-decoded:focus-visible {
   }
 }
 
-/* Reddit theme hooks (new + old + RES) */
 html.theme-dark .b64d-badge,
 html[data-theme="dark"] .b64d-badge,
 body.res-nightmode .b64d-badge,
 .theme-rpl.theme-dark .b64d-badge {
-  --b64d-fg: #e2e8f0;
-  --b64d-muted: #94a3b8;
-  --b64d-bg: #1e293b;
-  --b64d-bg-hover: #334155;
+  --b64d-fg: #e4e4e7;
+  --b64d-muted: #a1a1aa;
+  --b64d-bg: #27272a;
+  --b64d-bg-hover: #3f3f46;
   --b64d-ring: rgb(255 255 255 / 0.08);
-  --b64d-link: #f1f5f9;
-  --b64d-copied: #5eead4;
+  --b64d-link: #fafafa;
+  --b64d-copied: #f4f4f5;
 }
 
 html.theme-dark .b64d-badge.b64d-copied,
 html[data-theme="dark"] .b64d-badge.b64d-copied,
 body.res-nightmode .b64d-badge.b64d-copied,
 .theme-rpl.theme-dark .b64d-badge.b64d-copied {
-  --b64d-fg: #99f6e4;
-  --b64d-muted: #5eead4;
-  --b64d-bg: #134e4a;
-  --b64d-bg-hover: #115e59;
-  --b64d-ring: rgb(45 212 191 / 0.28);
+  --b64d-fg: #fafafa;
+  --b64d-muted: #d4d4d8;
+  --b64d-bg: #3f3f46;
+  --b64d-bg-hover: #52525b;
+  --b64d-ring: rgb(255 255 255 / 0.14);
 }
 
 html.theme-dark .b64d-copy:hover,
@@ -242,13 +240,12 @@ body.res-nightmode .b64d-copy:hover,
   background: rgb(255 255 255 / 0.08);
 }
 
-/* Light Reddit: keep soft slate (defaults already light) */
 html.theme-light .b64d-badge,
 html[data-theme="light"] .b64d-badge {
-  --b64d-fg: #334155;
-  --b64d-muted: #64748b;
-  --b64d-bg: #f1f5f9;
-  --b64d-bg-hover: #e2e8f0;
-  --b64d-ring: rgb(15 23 42 / 0.08);
-  --b64d-link: #0f172a;
+  --b64d-fg: #3f3f46;
+  --b64d-muted: #71717a;
+  --b64d-bg: #f4f4f5;
+  --b64d-bg-hover: #e4e4e7;
+  --b64d-ring: rgb(24 24 27 / 0.08);
+  --b64d-link: #18181b;
 }

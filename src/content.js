@@ -7,7 +7,7 @@
 
   const D = globalThis.Base64Decoder;
   if (!D) {
-    console.error("[Plain Text Helper] decoder.js not loaded");
+    console.error("[Plainly] decoder.js not loaded");
     return;
   }
 
