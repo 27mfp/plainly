@@ -89,21 +89,33 @@
 
   siteList.addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-remove]");
-    if (!btn) return;
+    if (!btn || btn.disabled) return;
     const origin = btn.getAttribute("data-remove");
+    if (!origin) return;
+
+    const host = hostOf(origin);
+    btn.disabled = true;
+
     const data = await storageGet({ [SITES_KEY]: [] });
     const sites = (Array.isArray(data[SITES_KEY]) ? data[SITES_KEY] : []).filter(
       (o) => o !== origin
     );
-    await storageSet({ [SITES_KEY]: sites });
+    try {
+      await storageSet({ [SITES_KEY]: sites });
+    } catch {
+      btn.disabled = false;
+      showSiteError("Couldn't remove " + host + ".");
+      return;
+    }
+
     renderSites(sites);
-    hideToast();
     updateThisSiteButton(sites);
+    showSuccess(host + " removed.");
 
     try {
       await chrome.permissions.remove({ origins: [origin + "/*"] });
     } catch {
-      /* ignore */
+      /* ignore — list is already updated */
     }
     try {
       await chrome.runtime.sendMessage({ type: "sync-scripts" });
@@ -378,19 +390,29 @@
     siteList.appendChild(reddit);
 
     for (const origin of sites) {
-      let host = origin;
-      try {
-        host = new URL(origin).host;
-      } catch {
-        /* keep raw */
-      }
+      const host = hostOf(origin);
+
       const li = document.createElement("li");
       li.className = "site-item";
-      li.innerHTML =
-        '<span class="site-host"></span>' +
-        '<button type="button" class="remove-btn" data-remove="" title="Remove" aria-label="Remove site">×</button>';
-      li.querySelector(".site-host").textContent = host;
-      li.querySelector(".remove-btn").setAttribute("data-remove", origin);
+
+      const hostEl = document.createElement("span");
+      hostEl.className = "site-host";
+      hostEl.textContent = host;
+      hostEl.title = origin;
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "remove-btn";
+      btn.setAttribute("data-remove", origin);
+      btn.title = "Remove " + host;
+      btn.setAttribute("aria-label", "Remove " + host);
+      btn.innerHTML =
+        '<svg class="remove-icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">' +
+        '<path d="M4 4l8 8M12 4l-8 8"/>' +
+        "</svg>";
+
+      li.appendChild(hostEl);
+      li.appendChild(btn);
       siteList.appendChild(li);
     }
   }

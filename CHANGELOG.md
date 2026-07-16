@@ -2,6 +2,11 @@
 
 All notable changes to **Plainly** are listed here.
 
+## 1.3.4 — 2026-07-16
+
+### UI
+- Remove-site control: larger hit area, SVG icon, focus/press states, “host removed” toast
+
 ## 1.3.3 — 2026-07-16
 
 ### Features

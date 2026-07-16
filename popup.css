@@ -294,10 +294,10 @@ h1 {
 .site-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px 6px 10px;
+  gap: 4px;
+  padding: 4px 4px 4px 10px;
   background: #18181b;
-  border-radius: 7px;
+  border-radius: 8px;
   box-shadow: 0 0 0 1px rgb(255 255 255 / 0.05);
 }
 
@@ -316,29 +316,58 @@ h1 {
   font-weight: 500;
   color: #71717a;
   letter-spacing: 0.02em;
+  padding-right: 6px;
 }
 
 .remove-btn {
-  width: 22px;
-  height: 22px;
+  position: relative;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
   margin: 0;
   padding: 0;
-  font-size: 14px;
-  line-height: 1;
   color: #71717a;
   background: transparent;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px; /* outer row 8px, pad ~2px → concentric */
   cursor: pointer;
-  transition-property: color, background-color;
+  transition-property: color, background-color, transform;
   transition-duration: 120ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Expand hit area to ~40px without changing layout */
+.remove-btn::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
 }
 
 .remove-btn:hover {
   color: #fafafa;
   background: #27272a;
+}
+
+.remove-btn:active {
+  transform: scale(0.96);
+}
+
+.remove-btn:focus-visible {
+  outline: 2px solid #a1a1aa;
+  outline-offset: 1px;
+  color: #fafafa;
+}
+
+.remove-btn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.remove-icon {
+  display: block;
+  pointer-events: none;
 }
 
 textarea {
