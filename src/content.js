@@ -193,12 +193,6 @@
     badge.setAttribute("role", "note");
     badge.setAttribute("title", "Plain text version");
 
-    const label = document.createElement("span");
-    label.className = "b64d-label";
-    label.textContent = "→";
-    label.setAttribute("aria-hidden", "true");
-    badge.appendChild(label);
-
     const url = asHttpUrl(hit.decoded);
     let decodedEl;
     if (url) {

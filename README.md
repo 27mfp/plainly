@@ -25,7 +25,7 @@ Posts sometimes hide links or messages as long coded strings. **Plainly** spots 
 ## Features
 
 - **Automatic** — works as you scroll Reddit
-- **Quiet zinc UI** — small tags that match light and dark Reddit
+- **Quiet zinc UI** — small tags with a thin RGB edge that match light and dark Reddit
 - **Links open** — if the plain text is a web address, click to open
 - **Copy in one click** — small icon on each tag
 - **Private** — nothing leaves your browser ([PRIVACY.md](./PRIVACY.md))
@@ -40,9 +40,9 @@ aHR0cHM6Ly9tZWdhdHVnYS5pby8=
 aHR0cHM6Ly93d3cuYmVzdGZyZWVzdHJlYW1pbmcub3JnLw==
 ```
 
-With Plainly you see grey tags:
+With Plainly you see quiet zinc tags with a thin rainbow edge:
 
-`→ https://megatuga.io/` · `→ https://www.bestfreestreaming.org/`
+`https://megatuga.io/` · `https://www.bestfreestreaming.org/`
 
 ## Install
 
