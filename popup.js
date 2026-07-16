@@ -117,11 +117,6 @@
     } catch {
       /* ignore — list is already updated */
     }
-    try {
-      await chrome.runtime.sendMessage({ type: "sync-scripts" });
-    } catch {
-      /* ignore */
-    }
   });
 
   inputEl.addEventListener("input", updateOutput);
@@ -309,7 +304,7 @@
 
   async function notifyBackground(origin) {
     try {
-      await chrome.runtime.sendMessage({ type: "sync-scripts" });
+      // Inject into open tabs for this origin (no registerContentScripts).
       await chrome.runtime.sendMessage({ type: "inject-origin", origin });
     } catch {
       /* service worker may wake slowly */

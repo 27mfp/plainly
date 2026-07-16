@@ -22,7 +22,9 @@ Coded lines are turned into plain text **only in your browser**.
 | Reddit (built-in) | Show plain text on Reddit |
 | Optional site access | Only for sites **you** add; Chrome asks each time |
 | `storage` | Save on/off and your site list |
-| `scripting` | Run on sites you approved |
+| `scripting` | Inject plain-text helper on sites you approved |
 | `activeTab` | Read the current tab’s address for **Add this site** (only when you open the popup) |
+
+Dynamic sites use on-demand injection when a matching tab finishes loading — not a permanent “run on all URLs” registration.
 
 We do not ask for history, cookies, or blanket “all websites” access up front.

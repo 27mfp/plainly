@@ -2,10 +2,18 @@
 
 All notable changes to **Plainly** are listed here.
 
-## 1.3.6 — 2026-07-16
+## 1.4.0 — 2026-07-16
 
-### Fix
-- Harder fix for `Duplicate script ID 'plainly-extra-sites'`: single-flight sync, always unregister then register, one retry
+### Critical fix
+- **Removed `registerContentScripts` entirely** (source of `Duplicate script ID 'plainly-extra-sites'`)
+- Extra sites now use `tabs.onUpdated` + `scripting.executeScript` / `insertCSS`
+- On install, purges any leftover legacy registered script IDs
+
+### Hardening
+- Content scan: scoped mutation roots, debounce, caps on nodes/roots (perf)
+- Skip disconnected nodes; clear timers on stop (leak hygiene)
+- Safer URL allowlist for decoded links (`http`/`https` only, length cap)
+- Background site-list cache to avoid storage I/O on every tab complete
 
 ## 1.3.5 — 2026-07-16
 

@@ -1,11 +1,11 @@
 /**
  * Content script: scan the page for Base64, show decoded values inline.
- * MutationObserver handles Reddit SPA / infinite scroll.
+ * MutationObserver handles SPA / infinite scroll (scoped batches).
  */
 (function () {
   "use strict";
 
-  // Guard against double inject (manifest + dynamic script / re-inject).
+  // Guard against double inject (manifest + executeScript / re-inject).
   if (globalThis.__plainlyLoaded) return;
   globalThis.__plainlyLoaded = true;
 
@@ -21,18 +21,30 @@
   const BADGE_CLASS = "b64d-badge";
   const DECODED_CLASS = "b64d-decoded";
   const ENABLED_KEY = "enabled";
+  const SCAN_DEBOUNCE_MS = 200;
+  const MAX_TEXT_NODES_PER_SCAN = 250;
+  const MAX_MUTATION_ROOTS = 40;
 
   let enabled = true;
   let observer = null;
   let scanTimer = null;
+  let copyTimer = null;
+  /** @type {Set<Element|Document>} */
+  let pendingRoots = new Set();
+  let storageListener = null;
 
   // ---- settings ----
   try {
     chrome.storage.sync.get({ [ENABLED_KEY]: true }, (data) => {
+      if (chrome.runtime.lastError) {
+        start();
+        return;
+      }
       enabled = data[ENABLED_KEY] !== false;
       if (enabled) start();
     });
-    chrome.storage.onChanged.addListener((changes, area) => {
+
+    storageListener = (changes, area) => {
       if (area !== "sync" || !changes[ENABLED_KEY]) return;
       enabled = changes[ENABLED_KEY].newValue !== false;
       if (enabled) {
@@ -42,7 +54,8 @@
         stop();
         removeAllDecorations();
       }
-    });
+    };
+    chrome.storage.onChanged.addListener(storageListener);
   } catch {
     // storage may be unavailable in file:// tests — default on
     start();
@@ -68,40 +81,66 @@
       clearTimeout(scanTimer);
       scanTimer = null;
     }
+    pendingRoots.clear();
+    if (copyTimer) {
+      clearTimeout(copyTimer);
+      copyTimer = null;
+    }
   }
 
   function onMutations(mutations) {
     if (!enabled) return;
-    let needsScan = false;
-    for (const m of mutations) {
+
+    /** @type {Set<Element>} */
+    const roots = new Set();
+
+    for (let i = 0; i < mutations.length; i++) {
+      const m = mutations[i];
       if (m.type === "characterData") {
-        const el = m.target.parentElement;
-        if (el && !el.closest("." + WRAP_CLASS) && !isIgnored(el)) {
-          needsScan = true;
-          break;
-        }
+        const el = m.target && m.target.parentElement;
+        if (el && !isIgnored(el)) roots.add(el);
       } else if (m.addedNodes && m.addedNodes.length) {
-        for (const n of m.addedNodes) {
-          if (n.nodeType === Node.ELEMENT_NODE && n.classList?.contains(WRAP_CLASS)) {
-            continue;
-          }
-          if (n.nodeType === Node.ELEMENT_NODE || n.nodeType === Node.TEXT_NODE) {
-            needsScan = true;
-            break;
+        for (let j = 0; j < m.addedNodes.length; j++) {
+          const n = m.addedNodes[j];
+          if (n.nodeType === Node.ELEMENT_NODE) {
+            if (n.classList && n.classList.contains(WRAP_CLASS)) continue;
+            if (!isIgnored(n)) roots.add(n);
+          } else if (n.nodeType === Node.TEXT_NODE && n.parentElement) {
+            if (!isIgnored(n.parentElement)) roots.add(n.parentElement);
           }
         }
-        if (needsScan) break;
       }
+      if (roots.size >= MAX_MUTATION_ROOTS) break;
     }
-    if (needsScan) scheduleScan(document.body);
+
+    if (!roots.size) return;
+    for (const r of roots) scheduleScan(r);
   }
 
   function scheduleScan(root) {
+    if (!root) return;
+    pendingRoots.add(root);
     if (scanTimer) clearTimeout(scanTimer);
-    scanTimer = setTimeout(() => {
-      scanTimer = null;
-      if (enabled && root) scanRoot(root);
-    }, 200);
+    scanTimer = setTimeout(flushScans, SCAN_DEBOUNCE_MS);
+  }
+
+  function flushScans() {
+    scanTimer = null;
+    if (!enabled) {
+      pendingRoots.clear();
+      return;
+    }
+    const batch = Array.from(pendingRoots);
+    pendingRoots.clear();
+    for (let i = 0; i < batch.length; i++) {
+      const root = batch[i];
+      // Drop disconnected nodes (memory / SPA unmounts)
+      if (root === document.body || root === document.documentElement) {
+        scanRoot(root);
+      } else if (root.isConnected) {
+        scanRoot(root);
+      }
+    }
   }
 
   function isIgnored(el) {
@@ -116,7 +155,9 @@
       tag === "SELECT" ||
       tag === "OPTION" ||
       tag === "SVG" ||
-      tag === "MATH"
+      tag === "MATH" ||
+      tag === "HEAD" ||
+      tag === "IFRAME"
     ) {
       return true;
     }
@@ -133,8 +174,8 @@
         if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
         const parent = node.parentElement;
         if (!parent || isIgnored(parent)) return NodeFilter.FILTER_REJECT;
-        if (parent.hasAttribute(ATTR)) return NodeFilter.FILTER_REJECT;
-        // Quick prefilter: base64 alphabet density
+        // Already handled by our wraps
+        if (parent.closest("." + WRAP_CLASS)) return NodeFilter.FILTER_REJECT;
         if (!/[A-Za-z0-9+/]{16,}/.test(node.nodeValue)) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       },
@@ -142,14 +183,17 @@
 
     const targets = [];
     let n;
-    while ((n = walker.nextNode())) targets.push(n);
+    while ((n = walker.nextNode()) && targets.length < MAX_TEXT_NODES_PER_SCAN) {
+      targets.push(n);
+    }
 
-    for (const textNode of targets) {
-      processTextNode(textNode);
+    for (let i = 0; i < targets.length; i++) {
+      processTextNode(targets[i]);
     }
   }
 
   function processTextNode(textNode) {
+    if (!textNode.isConnected) return;
     const text = textNode.nodeValue;
     if (!text) return;
 
@@ -159,11 +203,11 @@
     const parent = textNode.parentElement;
     if (!parent || isIgnored(parent)) return;
 
-    // Build replacement fragment: original text with badges after each match
     const frag = document.createDocumentFragment();
     let cursor = 0;
 
-    for (const hit of hits) {
+    for (let i = 0; i < hits.length; i++) {
+      const hit = hits[i];
       const start = text.indexOf(hit.raw, cursor);
       if (start === -1) continue;
 
@@ -189,6 +233,7 @@
       frag.appendChild(document.createTextNode(text.slice(cursor)));
     }
 
+    if (cursor === 0) return; // nothing applied
     parent.replaceChild(frag, textNode);
   }
 
@@ -211,6 +256,7 @@
       decodedEl = document.createElement("span");
     }
     decodedEl.className = DECODED_CLASS;
+    // textContent only — never innerHTML (XSS-safe for decoded payloads)
     decodedEl.textContent = hit.decoded;
     badge.appendChild(decodedEl);
 
@@ -237,11 +283,12 @@
     return badge;
   }
 
-  /** @returns {string|null} */
+  /** Only allow http(s) navigable URLs — blocks javascript:/data: etc. */
   function asHttpUrl(text) {
     if (!text || typeof text !== "string") return null;
     const t = text.trim();
-    if (!/^https?:\/\/[^\s]+$/i.test(t)) return null;
+    if (t.length > 2048) return null;
+    if (!/^https?:\/\/[^\s<>"'`]+$/i.test(t)) return null;
     try {
       const u = new URL(t);
       if (u.protocol !== "http:" && u.protocol !== "https:") return null;
@@ -254,7 +301,11 @@
   function copyText(str, badge) {
     const done = () => {
       badge.classList.add("b64d-copied");
-      setTimeout(() => badge.classList.remove("b64d-copied"), 1200);
+      if (copyTimer) clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => {
+        badge.classList.remove("b64d-copied");
+        copyTimer = null;
+      }, 1200);
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(str).then(done).catch(() => fallbackCopy(str, done));
@@ -266,6 +317,7 @@
   function fallbackCopy(str, done) {
     const ta = document.createElement("textarea");
     ta.value = str;
+    ta.setAttribute("readonly", "");
     ta.style.position = "fixed";
     ta.style.left = "-9999px";
     document.body.appendChild(ta);
@@ -276,7 +328,7 @@
     } catch {
       /* ignore */
     }
-    document.body.removeChild(ta);
+    ta.remove();
   }
 
   function removeAllDecorations() {
@@ -287,6 +339,5 @@
     });
   }
 
-  // Expose for manual test page
   globalThis.__b64d = { scanRoot, scheduleScan, start, stop };
 })();
