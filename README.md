@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/27mfp/plainly"><img alt="GitHub" src="https://img.shields.io/badge/github-27mfp%2Fplainly-18181b?style=flat-square" /></a>
-  <img alt="Version" src="https://img.shields.io/badge/version-1.3.2-18181b?style=flat-square" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.3.3-18181b?style=flat-square" />
   <img alt="Manifest" src="https://img.shields.io/badge/manifest-V3-3f3f46?style=flat-square" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-52525b?style=flat-square" />
 </p>
@@ -61,7 +61,8 @@ Repo: [github.com/27mfp/plainly](https://github.com/27mfp/plainly)
 | Read plain text | Zinc tag next to a coded line |
 | Open a link | Click the address in the tag |
 | Copy | Click the copy icon |
-| Add another website | Popup → **Sites** → paste `example.com` → **Add** → allow access → **refresh that tab** |
+| Add the page you’re on | Popup → **Add this site** (uses the site only, not the full path) → allow → **refresh** |
+| Add another website | Popup → paste `example.com` or a URL → **Add** → allow → **refresh** |
 | Remove a site | Popup → **×** next to the site |
 | Turn off | Popup → **On** switch |
 | Try a code | Paste it under **Try a code** |

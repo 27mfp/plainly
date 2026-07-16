@@ -39,11 +39,15 @@
 
     <section class="sites">
       <label for="site-input">Sites</label>
+      <button type="button" id="add-this-site" class="this-site-btn" disabled>
+        <span class="this-site-title">Add this site</span>
+        <span id="this-site-host" class="this-site-host"></span>
+      </button>
       <form class="site-row" id="site-form">
         <input
           id="site-input"
           type="text"
-          placeholder="example.com or full URL"
+          placeholder="or paste example.com / URL"
           spellcheck="false"
           autocomplete="off"
         />

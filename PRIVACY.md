@@ -23,5 +23,6 @@ Coded lines are turned into plain text **only in your browser**.
 | Optional site access | Only for sites **you** add; Chrome asks each time |
 | `storage` | Save on/off and your site list |
 | `scripting` | Run on sites you approved |
+| `activeTab` | Read the current tab’s address for **Add this site** (only when you open the popup) |
 
 We do not ask for history, cookies, or blanket “all websites” access up front.

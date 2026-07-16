@@ -16,7 +16,12 @@
   const siteError = document.getElementById("site-error");
   const toastEl = document.getElementById("toast");
   const githubEl = document.getElementById("github");
+  const addThisBtn = document.getElementById("add-this-site");
+  const thisSiteHostEl = document.getElementById("this-site-host");
   const D = globalThis.Base64Decoder;
+
+  /** @type {{ origin: string, pattern: string, host: string }|null} */
+  let activeTabSite = null;
 
   if (githubEl) githubEl.href = GITHUB_URL;
 
@@ -26,8 +31,6 @@
     const data = await storageGet({ enabled: true, [SITES_KEY]: [] });
     enabledEl.checked = data.enabled !== false;
 
-    // Permission dialog usually closes this popup mid-request.
-    // Finish any pending add, then paint the list.
     let sites = Array.isArray(data[SITES_KEY]) ? data[SITES_KEY] : [];
     try {
       const res = await chrome.runtime.sendMessage({ type: "finalize-pending" });
@@ -41,6 +44,7 @@
 
     renderSites(sites);
     await showPendingSuccessToast();
+    await refreshActiveTabButton(sites);
   }
 
   enabledEl.addEventListener("change", () => {
@@ -57,18 +61,77 @@
       showSiteError("Enter a valid site, e.g. x.com");
       return;
     }
+
+    const result = await tryAddSite(parsed);
+    if (result.ok) {
+      siteInput.value = "";
+    }
+  });
+
+  addThisBtn.addEventListener("click", async () => {
+    clearSiteError();
+    hideToast();
+
+    // Re-read tab on click (user gesture + activeTab).
+    const site = await readActiveTabSite();
+    activeTabSite = site;
+    updateThisSiteButton(await storageGet({ [SITES_KEY]: [] }).then((d) =>
+      Array.isArray(d[SITES_KEY]) ? d[SITES_KEY] : []
+    ));
+
+    if (!site) {
+      showSiteError("Open a normal web page (http/https), then try again.");
+      return;
+    }
+
+    await tryAddSite(site);
+  });
+
+  siteList.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-remove]");
+    if (!btn) return;
+    const origin = btn.getAttribute("data-remove");
+    const data = await storageGet({ [SITES_KEY]: [] });
+    const sites = (Array.isArray(data[SITES_KEY]) ? data[SITES_KEY] : []).filter(
+      (o) => o !== origin
+    );
+    await storageSet({ [SITES_KEY]: sites });
+    renderSites(sites);
+    hideToast();
+    updateThisSiteButton(sites);
+
+    try {
+      await chrome.permissions.remove({ origins: [origin + "/*"] });
+    } catch {
+      /* ignore */
+    }
+    try {
+      await chrome.runtime.sendMessage({ type: "sync-scripts" });
+    } catch {
+      /* ignore */
+    }
+  });
+
+  inputEl.addEventListener("input", updateOutput);
+
+  /**
+   * Shared add path for typed URLs and “Add this site”.
+   * @param {{ origin: string, pattern: string, host?: string }} parsed
+   * @returns {Promise<{ ok: boolean }>}
+   */
+  async function tryAddSite(parsed) {
     if (isRedditOrigin(parsed.origin)) {
       showSiteError("Reddit is already included.");
-      return;
+      return { ok: false };
     }
 
     const existing = await storageGet({ [SITES_KEY]: [] });
     const current = Array.isArray(existing[SITES_KEY]) ? existing[SITES_KEY] : [];
     if (current.includes(parsed.origin)) {
-      siteInput.value = "";
       renderSites(current);
       showSuccess(hostOf(parsed.origin) + " is already added.");
-      return;
+      updateThisSiteButton(current);
+      return { ok: true };
     }
 
     let already = false;
@@ -82,11 +145,11 @@
 
     if (already) {
       const sites = await addOriginToList(parsed.origin);
-      siteInput.value = "";
       renderSites(sites);
       await notifyBackground(parsed.origin);
       await markAndShowSuccess(parsed.origin);
-      return;
+      updateThisSiteButton(sites);
+      return { ok: true };
     }
 
     /*
@@ -109,47 +172,118 @@
     } catch {
       showSiteError("Could not request access for that site.");
       await chrome.storage.local.remove(PENDING_KEY);
-      return;
+      return { ok: false };
     }
 
     if (granted) {
       const sites = await addOriginToList(parsed.origin);
       await chrome.storage.local.remove(PENDING_KEY);
-      siteInput.value = "";
       renderSites(sites);
       await notifyBackground(parsed.origin);
       await markAndShowSuccess(parsed.origin);
-    } else {
-      await chrome.storage.local.remove(PENDING_KEY);
-      showSiteError("Permission was not granted.");
+      updateThisSiteButton(sites);
+      return { ok: true };
     }
-  });
 
-  siteList.addEventListener("click", async (e) => {
-    const btn = e.target.closest("[data-remove]");
-    if (!btn) return;
-    const origin = btn.getAttribute("data-remove");
-    const data = await storageGet({ [SITES_KEY]: [] });
-    const sites = (Array.isArray(data[SITES_KEY]) ? data[SITES_KEY] : []).filter(
-      (o) => o !== origin
-    );
-    await storageSet({ [SITES_KEY]: sites });
-    renderSites(sites);
-    hideToast();
+    await chrome.storage.local.remove(PENDING_KEY);
+    showSiteError("Permission was not granted.");
+    return { ok: false };
+  }
 
+  async function refreshActiveTabButton(sites) {
+    activeTabSite = await readActiveTabSite();
+    updateThisSiteButton(sites || []);
+  }
+
+  /**
+   * Read the active tab and normalize to site origin.
+   * Uses activeTab (granted when the user opens the popup).
+   * @returns {Promise<{ origin: string, pattern: string, host: string }|null>}
+   */
+  async function readActiveTabSite() {
     try {
-      await chrome.permissions.remove({ origins: [origin + "/*"] });
+      const tabs = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      const tab = tabs && tabs[0];
+      if (!tab || !tab.url) return null;
+      return parseTabUrl(tab.url);
     } catch {
-      /* ignore */
+      return null;
     }
-    try {
-      await chrome.runtime.sendMessage({ type: "sync-scripts" });
-    } catch {
-      /* ignore */
-    }
-  });
+  }
 
-  inputEl.addEventListener("input", updateOutput);
+  /**
+   * Normalize any tab URL to https? origin (path/query/hash stripped).
+   * @param {string} rawUrl
+   * @returns {{ origin: string, pattern: string, host: string }|null}
+   */
+  function parseTabUrl(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== "string") return null;
+    let url = rawUrl.trim();
+
+    // view-source:https://example.com/foo
+    if (url.toLowerCase().startsWith("view-source:")) {
+      url = url.slice("view-source:".length);
+    }
+
+    let u;
+    try {
+      u = new URL(url);
+    } catch {
+      return null;
+    }
+
+    // Only real web pages
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+      return null;
+    }
+
+    // origin already drops path, query, hash; keeps host + port
+    const origin = u.origin;
+    const host = u.host; // includes port if non-default
+    if (!host) return null;
+
+    return {
+      origin,
+      pattern: origin + "/*",
+      host,
+    };
+  }
+
+  function updateThisSiteButton(sites) {
+    if (!addThisBtn || !thisSiteHostEl) return;
+
+    if (!activeTabSite) {
+      addThisBtn.disabled = true;
+      thisSiteHostEl.textContent = "not a web page";
+      addThisBtn.title = "Open an http(s) page, then use this button";
+      addThisBtn.classList.remove("this-site-btn--done");
+      return;
+    }
+
+    const host = activeTabSite.host;
+    thisSiteHostEl.textContent = host;
+
+    if (isRedditOrigin(activeTabSite.origin)) {
+      addThisBtn.disabled = true;
+      addThisBtn.title = "Reddit is already included";
+      addThisBtn.classList.add("this-site-btn--done");
+      return;
+    }
+
+    if (sites.includes(activeTabSite.origin)) {
+      addThisBtn.disabled = true;
+      addThisBtn.title = host + " is already in your list";
+      addThisBtn.classList.add("this-site-btn--done");
+      return;
+    }
+
+    addThisBtn.disabled = false;
+    addThisBtn.title = "Add " + host + " (uses the site only, not the full page path)";
+    addThisBtn.classList.remove("this-site-btn--done");
+  }
 
   async function addOriginToList(origin) {
     const data = await storageGet({ [SITES_KEY]: [] });
@@ -183,7 +317,6 @@
       const local = await chrome.storage.local.get({ [LAST_ADDED_KEY]: null });
       const last = local[LAST_ADDED_KEY];
       if (!last || !last.host || !last.at) return;
-      // Show for a minute after add (covers popup reopen after permission dialog)
       if (Date.now() - last.at > 60 * 1000) {
         await chrome.storage.local.remove(LAST_ADDED_KEY);
         return;
@@ -263,23 +396,27 @@
   }
 
   /**
+   * Typed input: hostname or full URL → origin only.
    * @param {string} raw
-   * @returns {{ origin: string, pattern: string }|null}
+   * @returns {{ origin: string, pattern: string, host: string }|null}
    */
   function parseSiteInput(raw) {
     if (!raw || typeof raw !== "string") return null;
     let s = raw.trim();
     if (!s) return null;
-    if (!/^https?:\/\//i.test(s)) s = "https://" + s;
-    try {
-      const u = new URL(s);
-      if (u.protocol !== "http:" && u.protocol !== "https:") return null;
-      if (!u.hostname || !u.hostname.includes(".")) return null;
-      const origin = u.origin;
-      return { origin, pattern: origin + "/*" };
-    } catch {
-      return null;
+
+    // If user pasted a full page URL, strip to origin via URL parser.
+    if (/^https?:\/\//i.test(s) || s.toLowerCase().startsWith("view-source:")) {
+      return parseTabUrl(s);
     }
+
+    // Bare host: x.com, www.x.com, localhost:3000
+    // Strip path if they typed example.com/foo
+    s = s.replace(/\/.*$/, "");
+    s = s.replace(/^\/*/, "");
+    if (!s) return null;
+
+    return parseTabUrl("https://" + s);
   }
 
   function isRedditOrigin(origin) {

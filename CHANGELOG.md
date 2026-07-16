@@ -2,6 +2,12 @@
 
 All notable changes to **Plainly** are listed here.
 
+## 1.3.3 — 2026-07-16
+
+### Features
+- **Add this site** button — uses the active tab, normalizes to origin (drops path/query)
+- `activeTab` permission for reading the current page URL
+
 ## 1.3.2 — 2026-07-16
 
 ### Polish
