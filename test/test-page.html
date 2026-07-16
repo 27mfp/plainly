@@ -46,8 +46,8 @@
   <body>
     <h1>Manual test (simulates a Reddit post)</h1>
     <p class="meta">
-      Open this file via the extension (load unpacked → open this page), or open
-      directly after scripts inject below for local DOM check.
+      Local preview only — the packed extension injects on Reddit hosts. This
+      page loads <code>decoder.js</code> + <code>content.js</code> directly.
     </p>
 
     <article class="post" id="post">
@@ -56,7 +56,7 @@
         maria was looking for a book, but all books title were in base64, the
         list is the following:
       </p>
-      <p>HR0cHM6Ly9wdGZsaXguY2Mv</p>
+      <p>aHR0cHM6Ly90djA4MDAucHJvLw==</p>
       <p>aHR0cHM6Ly9tZWdhdHVnYS5pby8=</p>
       <p>aHR0cHM6Ly93d3cuYmVzdGZyZWVzdHJlYW1pbmcub3JnLw==</p>
       <p>
@@ -66,11 +66,9 @@
     </article>
 
     <div class="hint">
-      <strong>Expected:</strong> green “decoded” badges showing URLs next to
-      each Base64 string. Click a badge to copy. The first line
-      <code>HR0cHM6Ly9…</code> is truncated Base64 (missing leading
-      <code>a</code>); it may decode to partial text or be skipped depending on
-      validity — full strings below it should fully decode.
+      <strong>Expected:</strong> slate chips with a quiet <code>b64</code> label,
+      clickable URL when decoded text is a link, and a copy icon. Open
+      <code>test-page.html</code> after a hard refresh to preview UI changes.
     </div>
 
     <script src="../src/decoder.js"></script>

@@ -1,121 +1,253 @@
-/* Base64 Decoder — inline decorations */
+/* Base64 Decoder — minimal slate badges for Reddit */
 
 .b64d-wrap {
   display: inline;
-  position: relative;
 }
 
 .b64d-original {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   word-break: break-all;
+  opacity: 0.72;
 }
 
+/* Soft slate chip */
 .b64d-badge {
+  --b64d-fg: #334155;
+  --b64d-muted: #64748b;
+  --b64d-bg: #f1f5f9;
+  --b64d-bg-hover: #e2e8f0;
+  --b64d-ring: rgb(15 23 42 / 0.08);
+  --b64d-link: #0f172a;
+  --b64d-copied: #0f766e;
+
   display: inline-flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.35em;
-  margin-left: 0.4em;
-  padding: 0.15em 0.5em 0.2em;
-  max-width: min(100%, 42rem);
+  align-items: center;
+  gap: 0.4em;
+  margin-left: 0.45em;
+  padding: 0.2em 0.45em 0.2em 0.5em;
+  max-width: min(100%, 40rem);
   vertical-align: middle;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.85em;
+  font-size: 0.8125em;
   line-height: 1.35;
-  color: #0f3d2e;
-  background: linear-gradient(180deg, #e8faf3 0%, #d4f5e8 100%);
-  border: 1px solid #7dceb0;
+  color: var(--b64d-fg);
+  background: var(--b64d-bg);
+  border: none;
   border-radius: 6px;
-  box-shadow: 0 1px 2px rgba(15, 61, 46, 0.08);
-  cursor: pointer;
+  box-shadow:
+    0 0 0 1px var(--b64d-ring),
+    0 1px 2px rgb(15 23 42 / 0.06);
+  cursor: default;
   user-select: text;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+  transition-property: background-color, box-shadow, transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  animation: b64d-in 180ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
 .b64d-badge:hover {
-  background: linear-gradient(180deg, #dff7ec 0%, #c5efdc 100%);
-  border-color: #4faf8a;
-  box-shadow: 0 2px 6px rgba(15, 61, 46, 0.12);
-}
-
-.b64d-badge:active {
-  transform: translateY(0.5px);
+  background: var(--b64d-bg-hover);
+  box-shadow:
+    0 0 0 1px rgb(15 23 42 / 0.12),
+    0 2px 6px rgb(15 23 42 / 0.08);
 }
 
 .b64d-badge.b64d-copied {
-  background: linear-gradient(180deg, #e8f0ff 0%, #d6e4ff 100%);
-  border-color: #7aa2e8;
-  color: #1a2f5a;
-}
-
-.b64d-badge.b64d-copied .b64d-label::after {
-  content: " · copied!";
+  --b64d-fg: var(--b64d-copied);
+  --b64d-muted: #0d9488;
+  --b64d-bg: #f0fdfa;
+  --b64d-bg-hover: #ccfbf1;
+  --b64d-ring: rgb(13 148 136 / 0.22);
 }
 
 .b64d-label {
   flex-shrink: 0;
-  font-size: 0.75em;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 0.7em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #1a7a54;
-  opacity: 0.9;
-}
-
-.b64d-badge.b64d-copied .b64d-label {
-  color: #2b5bb5;
+  color: var(--b64d-muted);
+  line-height: 1;
 }
 
 .b64d-decoded {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-weight: 500;
+  font-size: 0.98em;
   word-break: break-all;
-  color: inherit;
+  color: var(--b64d-fg);
+  text-decoration: none;
 }
 
-/* Dark pages (Reddit dark mode, etc.) */
+a.b64d-decoded {
+  color: var(--b64d-link);
+  text-decoration: none;
+  text-underline-offset: 2px;
+  transition-property: color, text-decoration-color;
+  transition-duration: 120ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+a.b64d-decoded:hover {
+  text-decoration: underline;
+  text-decoration-color: rgb(100 116 139 / 0.7);
+}
+
+a.b64d-decoded:focus-visible {
+  outline: 2px solid #94a3b8;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Copy control — quiet until hover */
+.b64d-copy {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 1.35em;
+  height: 1.35em;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--b64d-muted);
+  cursor: pointer;
+  opacity: 0.55;
+  transition-property: opacity, background-color, color, transform;
+  transition-duration: 120ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.b64d-badge:hover .b64d-copy,
+.b64d-copy:focus-visible {
+  opacity: 1;
+}
+
+.b64d-copy:hover {
+  background: rgb(15 23 42 / 0.06);
+  color: var(--b64d-fg);
+}
+
+.b64d-copy:active {
+  transform: scale(0.96);
+}
+
+.b64d-copy:focus-visible {
+  outline: 2px solid #94a3b8;
+  outline-offset: 1px;
+}
+
+.b64d-copy svg {
+  width: 0.85em;
+  height: 0.85em;
+  display: block;
+}
+
+.b64d-copy .b64d-icon-check {
+  display: none;
+}
+
+.b64d-badge.b64d-copied .b64d-icon-copy {
+  display: none;
+}
+
+.b64d-badge.b64d-copied .b64d-icon-check {
+  display: block;
+}
+
+.b64d-badge.b64d-copied .b64d-copy {
+  opacity: 1;
+  color: var(--b64d-copied);
+}
+
+@keyframes b64d-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .b64d-badge {
+    animation: none;
+  }
+
+  .b64d-badge,
+  .b64d-copy,
+  a.b64d-decoded {
+    transition: none;
+  }
+}
+
+/* Prefer dark chip on Reddit dark / system dark */
 @media (prefers-color-scheme: dark) {
   .b64d-badge {
-    color: #c8f5e0;
-    background: linear-gradient(180deg, #1a3d30 0%, #143328 100%);
-    border-color: #2f7a5c;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-  }
-
-  .b64d-badge:hover {
-    background: linear-gradient(180deg, #1f4a39 0%, #184032 100%);
-    border-color: #3d9a74;
-  }
-
-  .b64d-label {
-    color: #6fd4a8;
+    --b64d-fg: #e2e8f0;
+    --b64d-muted: #94a3b8;
+    --b64d-bg: #1e293b;
+    --b64d-bg-hover: #334155;
+    --b64d-ring: rgb(255 255 255 / 0.08);
+    --b64d-link: #f1f5f9;
+    --b64d-copied: #5eead4;
   }
 
   .b64d-badge.b64d-copied {
-    color: #c8d9ff;
-    background: linear-gradient(180deg, #1a2740 0%, #152033 100%);
-    border-color: #3d5f9a;
+    --b64d-fg: #99f6e4;
+    --b64d-muted: #5eead4;
+    --b64d-bg: #134e4a;
+    --b64d-bg-hover: #115e59;
+    --b64d-ring: rgb(45 212 191 / 0.28);
   }
 
-  .b64d-badge.b64d-copied .b64d-label {
-    color: #8eb0f0;
+  .b64d-copy:hover {
+    background: rgb(255 255 255 / 0.08);
   }
 }
 
-/* Reddit often forces its own color scheme via html classes */
+/* Reddit theme hooks (new + old + RES) */
 html.theme-dark .b64d-badge,
 html[data-theme="dark"] .b64d-badge,
-body.res-nightmode .b64d-badge {
-  color: #c8f5e0;
-  background: linear-gradient(180deg, #1a3d30 0%, #143328 100%);
-  border-color: #2f7a5c;
+body.res-nightmode .b64d-badge,
+.theme-rpl.theme-dark .b64d-badge {
+  --b64d-fg: #e2e8f0;
+  --b64d-muted: #94a3b8;
+  --b64d-bg: #1e293b;
+  --b64d-bg-hover: #334155;
+  --b64d-ring: rgb(255 255 255 / 0.08);
+  --b64d-link: #f1f5f9;
+  --b64d-copied: #5eead4;
 }
 
-html.theme-dark .b64d-label,
-html[data-theme="dark"] .b64d-label,
-body.res-nightmode .b64d-label {
-  color: #6fd4a8;
+html.theme-dark .b64d-badge.b64d-copied,
+html[data-theme="dark"] .b64d-badge.b64d-copied,
+body.res-nightmode .b64d-badge.b64d-copied,
+.theme-rpl.theme-dark .b64d-badge.b64d-copied {
+  --b64d-fg: #99f6e4;
+  --b64d-muted: #5eead4;
+  --b64d-bg: #134e4a;
+  --b64d-bg-hover: #115e59;
+  --b64d-ring: rgb(45 212 191 / 0.28);
+}
+
+html.theme-dark .b64d-copy:hover,
+html[data-theme="dark"] .b64d-copy:hover,
+body.res-nightmode .b64d-copy:hover,
+.theme-rpl.theme-dark .b64d-copy:hover {
+  background: rgb(255 255 255 / 0.08);
+}
+
+/* Light Reddit: keep soft slate (defaults already light) */
+html.theme-light .b64d-badge,
+html[data-theme="light"] .b64d-badge {
+  --b64d-fg: #334155;
+  --b64d-muted: #64748b;
+  --b64d-bg: #f1f5f9;
+  --b64d-bg-hover: #e2e8f0;
+  --b64d-ring: rgb(15 23 42 / 0.08);
+  --b64d-link: #0f172a;
 }

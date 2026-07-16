@@ -175,28 +175,7 @@
       original.textContent = hit.raw;
       wrap.appendChild(original);
 
-      const badge = document.createElement("span");
-      badge.className = BADGE_CLASS;
-      badge.setAttribute("title", "Decoded Base64 — click to copy");
-      badge.setAttribute("role", "note");
-
-      const label = document.createElement("span");
-      label.className = "b64d-label";
-      label.textContent = "decoded";
-      badge.appendChild(label);
-
-      const decoded = document.createElement("span");
-      decoded.className = DECODED_CLASS;
-      decoded.textContent = hit.decoded;
-      badge.appendChild(decoded);
-
-      badge.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        copyText(hit.decoded, badge);
-      });
-
-      wrap.appendChild(badge);
+      wrap.appendChild(buildBadge(hit));
       frag.appendChild(wrap);
       cursor = start + hit.raw.length;
     }
@@ -206,6 +185,70 @@
     }
 
     parent.replaceChild(frag, textNode);
+  }
+
+  function buildBadge(hit) {
+    const badge = document.createElement("span");
+    badge.className = BADGE_CLASS;
+    badge.setAttribute("role", "note");
+    badge.setAttribute("title", "Decoded Base64");
+
+    const label = document.createElement("span");
+    label.className = "b64d-label";
+    label.textContent = "b64";
+    badge.appendChild(label);
+
+    const url = asHttpUrl(hit.decoded);
+    let decodedEl;
+    if (url) {
+      decodedEl = document.createElement("a");
+      decodedEl.href = url;
+      decodedEl.target = "_blank";
+      decodedEl.rel = "noopener noreferrer";
+      decodedEl.title = "Open link";
+      decodedEl.addEventListener("click", (e) => e.stopPropagation());
+    } else {
+      decodedEl = document.createElement("span");
+    }
+    decodedEl.className = DECODED_CLASS;
+    decodedEl.textContent = hit.decoded;
+    badge.appendChild(decodedEl);
+
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "b64d-copy";
+    copyBtn.setAttribute("aria-label", "Copy decoded text");
+    copyBtn.setAttribute("title", "Copy");
+    copyBtn.innerHTML =
+      '<svg class="b64d-icon-copy" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">' +
+      '<rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/>' +
+      '<path d="M10.5 5.5V4A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5"/>' +
+      "</svg>" +
+      '<svg class="b64d-icon-check" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75">' +
+      '<path d="M3.5 8.5 6.5 11.5 12.5 4.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg>";
+    copyBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      copyText(hit.decoded, badge);
+    });
+    badge.appendChild(copyBtn);
+
+    return badge;
+  }
+
+  /** @returns {string|null} */
+  function asHttpUrl(text) {
+    if (!text || typeof text !== "string") return null;
+    const t = text.trim();
+    if (!/^https?:\/\/[^\s]+$/i.test(t)) return null;
+    try {
+      const u = new URL(t);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+      return u.href;
+    } catch {
+      return null;
+    }
   }
 
   function copyText(str, badge) {

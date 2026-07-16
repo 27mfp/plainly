@@ -47,12 +47,12 @@ function createPng(size) {
         b = 0,
         a = 0;
       if (inside && !cornerCut) {
-        // gradient green
-        r = Math.round(26 + ny * 10);
-        g = Math.round(140 + (1 - ny) * 30);
-        b = Math.round(90 + nx * 20);
+        // slate surface (#1e293b → #0f172a)
+        r = Math.round(30 - ny * 8);
+        g = Math.round(41 - ny * 8);
+        b = Math.round(59 - ny * 10);
         a = 255;
-        // lighter "64" bars
+        // light "64" bars
         const bar1 =
           nx > 0.28 && nx < 0.42 && ny > 0.28 && ny < 0.72;
         const bar2 =
@@ -60,9 +60,9 @@ function createPng(size) {
         const bar3 =
           nx > 0.48 && nx < 0.62 && ny > 0.42 && ny < 0.72;
         if (bar1 || bar2 || bar3) {
-          r = 255;
-          g = 255;
-          b = 255;
+          r = 226;
+          g = 232;
+          b = 240; // slate-200
         }
       }
       const i = 1 + x * 4;

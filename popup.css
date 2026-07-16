@@ -3,13 +3,14 @@
 }
 
 body {
-  width: 320px;
+  width: 300px;
   margin: 0;
-  padding: 14px 16px 16px;
+  padding: 14px 14px 16px;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 13px;
-  color: #14201a;
-  background: #f7faf8;
+  color: #e2e8f0;
+  background: #0f172a;
+  -webkit-font-smoothing: antialiased;
 }
 
 header {
@@ -20,30 +21,34 @@ header {
 }
 
 .logo {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #fff;
-  background: linear-gradient(145deg, #1a9a66, #0f6b47);
-  border-radius: 9px;
-  box-shadow: 0 2px 6px rgba(15, 107, 71, 0.35);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #f8fafc;
+  background: #1e293b;
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.08),
+    0 1px 2px rgb(0 0 0 / 0.25);
 }
 
 h1 {
   margin: 0;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1.2;
+  color: #f1f5f9;
 }
 
 .sub {
-  margin: 2px 0 0;
+  margin: 3px 0 0;
   font-size: 11px;
-  color: #5a6b62;
+  color: #94a3b8;
 }
 
 .toggle-row {
@@ -54,11 +59,19 @@ h1 {
   gap: 12px;
   padding: 10px 12px;
   margin-bottom: 14px;
-  background: #fff;
-  border: 1px solid #d5e3db;
+  background: #1e293b;
   border-radius: 10px;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06);
   cursor: pointer;
   user-select: none;
+  color: #e2e8f0;
+  transition-property: background-color, box-shadow;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.toggle-row:hover {
+  background: #243044;
 }
 
 .toggle-row input {
@@ -69,13 +82,15 @@ h1 {
 }
 
 .switch {
-  width: 40px;
-  height: 22px;
+  width: 36px;
+  height: 20px;
   flex-shrink: 0;
-  background: #c5d4cc;
+  background: #334155;
   border-radius: 999px;
   position: relative;
-  transition: background 0.15s ease;
+  transition-property: background-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
 .switch::after {
@@ -83,33 +98,36 @@ h1 {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 18px;
-  height: 18px;
-  background: #fff;
+  width: 16px;
+  height: 16px;
+  background: #f8fafc;
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  transition: transform 0.15s ease;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  transition-property: transform;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
 .toggle-row input:checked + .switch {
-  background: #1a9a66;
+  background: #64748b;
 }
 
 .toggle-row input:checked + .switch::after {
-  transform: translateX(18px);
+  transform: translateX(16px);
 }
 
 .toggle-row input:focus-visible + .switch {
-  outline: 2px solid #1a9a66;
+  outline: 2px solid #94a3b8;
   outline-offset: 2px;
 }
 
 .manual label {
   display: block;
   margin-bottom: 6px;
-  font-weight: 600;
-  font-size: 12px;
-  color: #3d4f46;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: #94a3b8;
 }
 
 textarea {
@@ -120,16 +138,24 @@ textarea {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
   line-height: 1.4;
-  color: #14201a;
-  background: #fff;
-  border: 1px solid #d5e3db;
+  color: #e2e8f0;
+  background: #1e293b;
+  border: none;
   border-radius: 8px;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06);
+  transition-property: box-shadow, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+textarea::placeholder {
+  color: #64748b;
 }
 
 textarea:focus {
-  outline: 2px solid #1a9a66;
-  outline-offset: 1px;
-  border-color: #1a9a66;
+  outline: none;
+  background: #243044;
+  box-shadow: 0 0 0 1px rgb(148 163 184 / 0.45);
 }
 
 .output {
@@ -139,21 +165,21 @@ textarea:focus {
   font-size: 12px;
   line-height: 1.4;
   word-break: break-all;
-  background: #e8faf3;
-  border: 1px solid #7dceb0;
+  background: #1e293b;
   border-radius: 8px;
-  color: #0f3d2e;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08);
+  color: #e2e8f0;
 }
 
 .output.error {
-  background: #fef2f2;
-  border-color: #f0b4b4;
-  color: #7a2020;
+  color: #fca5a5;
+  box-shadow: 0 0 0 1px rgb(248 113 113 / 0.35);
+  background: #1c1917;
 }
 
 footer {
   margin-top: 14px;
   font-size: 11px;
-  line-height: 1.4;
-  color: #5a6b62;
+  line-height: 1.45;
+  color: #64748b;
 }
