@@ -3,37 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Base64 Decoder</title>
+    <title>Plain Text Helper</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <header>
-      <div class="logo" aria-hidden="true">64</div>
+      <div class="logo" aria-hidden="true">Aa</div>
       <div>
-        <h1>Base64 Decoder</h1>
-        <p class="sub">Reddit · auto-decode</p>
+        <h1>Plain Text Helper</h1>
+        <p class="sub">Makes coded text readable on Reddit</p>
       </div>
     </header>
 
     <label class="toggle-row">
-      <span>Enable on Reddit</span>
+      <span>Show plain text on Reddit</span>
       <input type="checkbox" id="enabled" checked />
       <span class="switch" aria-hidden="true"></span>
     </label>
 
     <section class="manual">
-      <label for="input">Try a string</label>
+      <label for="input">Check a code</label>
       <textarea
         id="input"
         rows="3"
-        placeholder="Paste base64…"
+        placeholder="Paste a coded line here…"
         spellcheck="false"
       ></textarea>
       <div id="output" class="output" hidden></div>
     </section>
 
     <footer>
-      <span>Slate chips appear next to Base64 on Reddit. Open a link or use the copy icon.</span>
+      <span>On Reddit, plain text shows next to coded lines. Click a link to open it, or the icon to copy.</span>
     </footer>
 
     <script src="src/decoder.js"></script>

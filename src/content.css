@@ -62,12 +62,13 @@
 
 .b64d-label {
   flex-shrink: 0;
-  font-size: 0.7em;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.95em;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--b64d-muted);
   line-height: 1;
+  opacity: 0.85;
 }
 
 .b64d-decoded {

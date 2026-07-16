@@ -1,68 +1,68 @@
-# Base64 Decoder for Reddit
+# Plain Text Helper for Reddit
 
-Chrome extension that detects Base64 on **Reddit** and shows a sleek slate chip with the decoded text.
+A Chrome extension that finds coded lines on **Reddit** and shows the plain text next to them.
 
-Open source — **PRs welcome** to support other sites ([CONTRIBUTING.md](./CONTRIBUTING.md)).
+Open source — help welcome for other sites ([CONTRIBUTING.md](./CONTRIBUTING.md)).
 
 ## What it does
 
-On a Reddit post like:
+When a post has lines like:
 
 ```text
 aHR0cHM6Ly9tZWdhdHVnYS5pby8=
 aHR0cHM6Ly93d3cuYmVzdGZyZWVzdHJlYW1pbmcub3JnLw==
 ```
 
-you get a minimal slate badge next to each string:
+you see a small grey tag with the readable version:
 
-- Short **b64** label
-- Decoded text (clickable when it is an `http(s)` URL)
-- Copy icon on the chip
+- An arrow pointing at the plain text
+- If it’s a link, you can open it
+- A copy button if you want it on the clipboard
 
 ## Supported sites
 
-| Site   | Status   |
-| ------ | -------- |
-| Reddit | Supported (`*.reddit.com`) |
+| Site   | Status    |
+| ------ | --------- |
+| Reddit | Supported |
 
 Want another site? See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-## Install (unpacked)
+## Install
 
 1. Open Chrome → `chrome://extensions`
-2. Enable **Developer mode**
+2. Turn on **Developer mode**
 3. Click **Load unpacked**
-4. Select this repository folder (`base64decoder`)
-5. Open Reddit and reload the tab after installing or updating
+4. Choose this folder
+5. Open Reddit and refresh the page
 
-Optional: pin the extension — popup toggles decoding and lets you try a string manually.
+You can pin the extension to turn it on/off or paste a code to check by hand.
 
 ## Develop & test
 
 ```bash
-npm test          # Node unit tests for the decoder
-npm run icons     # Regenerate slate icons
+npm test          # automatic checks for the decoder
+npm run icons     # rebuild the app icons
 ```
 
-- **Reddit:** load unpacked, visit a post with Base64, hard-refresh after changes.
-- **Local UI preview:** open `test/test-page.html` (injects content script styles/scripts without the manifest).
+- **Reddit:** load the folder in Chrome, open a post with coded text, refresh after you change code.
+- **Local preview:** open `test/test-page.html` in the browser.
 
 ## Project layout
 
 ```text
-manifest.json          MV3 — Reddit-only content_scripts matches
-src/decoder.js         Pure detect/decode logic (shared with tests)
-src/content.js         Scanner, slate chips, URL links, copy
-src/content.css        Minimal slate badge styles
-popup.html / .js / .css  Toggle + manual decode (slate UI)
-test/                  Unit tests + simulated post page
-CONTRIBUTING.md        How to add other websites via PR
+manifest.json          Chrome settings (Reddit only)
+src/decoder.js         Finding and reading coded text
+src/content.js         Putting plain text next to posts
+src/content.css        Look of the grey tags
+popup.html / .js / .css  On/off switch and manual check
+test/                  Automatic tests + sample page
+CONTRIBUTING.md        How to add other websites
 ```
 
 ## Notes
 
-- Runs only on Reddit host patterns (not all websites).
-- Only **printable UTF-8** decodes are shown (skips binary noise).
-- Minimum candidate length is **16** characters to reduce false positives.
-- Missing `=` padding is added automatically when valid.
-- `storage` is only used for the on/off toggle.
+- Only runs on Reddit.
+- Only shows results that look like normal readable text (not random junk).
+- Very short codes are ignored so normal words aren’t flagged by mistake.
+- Missing padding on codes is fixed automatically when possible.
+- Chrome “storage” is only used for the on/off switch.

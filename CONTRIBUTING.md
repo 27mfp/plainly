@@ -1,10 +1,10 @@
 # Contributing
 
-Thanks for helping improve **Base64 Decoder for Reddit**.
+Thanks for helping improve **Plain Text Helper for Reddit**.
 
 ## Scope today
 
-The extension only injects on Reddit. That keeps permissions tight and the UX focused.
+The extension only runs on Reddit. That keeps access limited and the experience focused.
 
 ```json
 "matches": [
@@ -25,15 +25,15 @@ The extension only injects on Reddit. That keeps permissions tight and the UX fo
 
 3. If the site needs special DOM handling (shadow roots, heavy virtual lists, etc.), extend `src/content.js` with a small site-specific path — prefer feature detection over user-agent hacks.
 4. Add a short note under **Supported sites** in `README.md`.
-5. Test on that site with real Base64 samples (and dark/light themes if relevant).
-6. Open a PR describing the site, match patterns, and how you tested.
+5. Test on that site with real coded samples (and dark/light themes if relevant).
+6. Open a pull request describing the site, which URLs you added, and how you tested.
 
 ### Guidelines
 
-- Prefer the **narrowest** match patterns that work.
+- Prefer the **narrowest** URL patterns that work.
 - Do **not** switch back to `"<all_urls>"` without a strong reason and discussion.
-- Keep the slate badge UI consistent; site-specific CSS overrides only when necessary.
-- Decoder logic stays in `src/decoder.js` so unit tests remain the source of truth.
+- Keep the grey tag look consistent; site-specific CSS only when necessary.
+- Reading coded text stays in `src/decoder.js` so the automatic tests stay the source of truth.
 
 ## Local development
 
@@ -43,12 +43,12 @@ npm test
 
 1. Chrome → `chrome://extensions` → **Load unpacked** → this folder  
 2. After code changes, click **Reload** on the extension card  
-3. Hard-refresh Reddit (or the site you are adding)
+3. Refresh Reddit (or the site you are adding)
 
-Manual DOM preview (no Reddit required): open `test/test-page.html` (scripts are included on the page).
+Manual preview (no Reddit required): open `test/test-page.html` (scripts are included on the page).
 
 ## Code style
 
-- Vanilla JS, Manifest V3, no build step required for the extension itself.
+- Plain JavaScript, Manifest V3, no build step required for the extension itself.
 - Avoid large dependencies.
-- Keep false-positive rate low: only show badges when decode yields plausible UTF-8 text.
+- Only show tags when the result looks like normal readable text.

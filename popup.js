@@ -29,7 +29,7 @@
       outputEl.textContent = decoded;
     } else {
       outputEl.classList.add("error");
-      outputEl.textContent = "Could not decode as valid Base64 text.";
+      outputEl.textContent = "Couldn't turn this into plain text.";
     }
   }
 

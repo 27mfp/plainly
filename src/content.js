@@ -7,7 +7,7 @@
 
   const D = globalThis.Base64Decoder;
   if (!D) {
-    console.error("[Base64 Decoder] decoder.js not loaded");
+    console.error("[Plain Text Helper] decoder.js not loaded");
     return;
   }
 
@@ -191,11 +191,12 @@
     const badge = document.createElement("span");
     badge.className = BADGE_CLASS;
     badge.setAttribute("role", "note");
-    badge.setAttribute("title", "Decoded Base64");
+    badge.setAttribute("title", "Plain text version");
 
     const label = document.createElement("span");
     label.className = "b64d-label";
-    label.textContent = "b64";
+    label.textContent = "→";
+    label.setAttribute("aria-hidden", "true");
     badge.appendChild(label);
 
     const url = asHttpUrl(hit.decoded);
@@ -217,7 +218,7 @@
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
     copyBtn.className = "b64d-copy";
-    copyBtn.setAttribute("aria-label", "Copy decoded text");
+    copyBtn.setAttribute("aria-label", "Copy plain text");
     copyBtn.setAttribute("title", "Copy");
     copyBtn.innerHTML =
       '<svg class="b64d-icon-copy" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">' +
