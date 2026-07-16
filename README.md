@@ -10,13 +10,15 @@
 </p>
 
 <p align="center">
+  <a href="./README.pt-PT.md">Português (PT)</a>
+  ·
   <a href="https://github.com/27mfp/plainly"><img alt="GitHub" src="https://img.shields.io/badge/github-27mfp%2Fplainly-18181b?style=flat-square" /></a>
   <img alt="Version" src="https://img.shields.io/badge/version-1.4.0-18181b?style=flat-square" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-52525b?style=flat-square" />
 </p>
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="Coded line with plain text next to it" width="640" />
+  <img src="docs/demo-v2.png" alt="Coded lines decoded to Google, YouTube, and this repo" width="720" />
 </p>
 
 ---
@@ -33,11 +35,13 @@ Some posts hide links or messages as long coded strings. **Plainly** finds them 
 
 ## Example
 
+This project’s own page, as coded text:
+
 ```text
-aHR0cHM6Ly9tZWdhdHVnYS5pby8=
+aHR0cHM6Ly9naXRodWIuY29tLzI3bWZwL3BsYWlubHk=
 ```
 
-Plainly shows: `https://megatuga.io/`
+Plainly shows: [`https://github.com/27mfp/plainly`](https://github.com/27mfp/plainly)
 
 ## Install
 
@@ -74,13 +78,17 @@ npm run icons
 plainly/
 ├── manifest.json      Chrome extension settings
 ├── icons/             App icons
-├── docs/              Screenshot
+├── docs/demo.png      Demo image
 ├── src/               Extension code
 ├── popup.*            Toolbar menu
 └── test/              Tests and local preview page
 ```
 
 How to contribute: [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+## Other languages
+
+- [Português (Portugal)](./README.pt-PT.md)
 
 ## Privacy & security
 
