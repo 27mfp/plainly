@@ -5,6 +5,8 @@
   const GITHUB_URL = "https://github.com/";
 
   const SITES_KEY = "extraSites";
+  const PENDING_KEY = "pendingSite";
+
   const enabledEl = document.getElementById("enabled");
   const inputEl = document.getElementById("input");
   const outputEl = document.getElementById("output");
@@ -17,10 +19,28 @@
 
   if (githubEl) githubEl.href = GITHUB_URL;
 
-  chrome.storage.sync.get({ enabled: true, [SITES_KEY]: [] }, (data) => {
+  init();
+
+  async function init() {
+    const data = await storageGet({ enabled: true, [SITES_KEY]: [] });
     enabledEl.checked = data.enabled !== false;
-    renderSites(Array.isArray(data[SITES_KEY]) ? data[SITES_KEY] : []);
-  });
+
+    // Permission dialog usually closes this popup mid-request.
+    // Finish any pending add, then paint the list.
+    let sites = Array.isArray(data[SITES_KEY]) ? data[SITES_KEY] : [];
+    try {
+      const res = await chrome.runtime.sendMessage({ type: "finalize-pending" });
+      if (res && res.ok && Array.isArray(res.sites)) sites = res.sites;
+    } catch {
+      /* service worker waking */
+    }
+
+    // Also re-read storage after finalize
+    const fresh = await storageGet({ [SITES_KEY]: [] });
+    if (Array.isArray(fresh[SITES_KEY])) sites = fresh[SITES_KEY];
+
+    renderSites(sites);
+  }
 
   enabledEl.addEventListener("change", () => {
     chrome.storage.sync.set({ enabled: enabledEl.checked });
@@ -29,9 +49,10 @@
   siteForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     clearSiteError();
+
     const parsed = parseSiteInput(siteInput.value);
     if (!parsed) {
-      showSiteError("Enter a valid site, e.g. example.com");
+      showSiteError("Enter a valid site, e.g. x.com");
       return;
     }
     if (isRedditOrigin(parsed.origin)) {
@@ -39,37 +60,67 @@
       return;
     }
 
-    try {
-      const granted = await chrome.permissions.request({
-        origins: [parsed.pattern],
-      });
-      if (!granted) {
-        showSiteError("Permission was not granted.");
-        return;
-      }
-    } catch (err) {
-      showSiteError("Could not request access for that site.");
+    // Already in the list?
+    const existing = await storageGet({ [SITES_KEY]: [] });
+    const current = Array.isArray(existing[SITES_KEY]) ? existing[SITES_KEY] : [];
+    if (current.includes(parsed.origin)) {
+      siteInput.value = "";
+      renderSites(current);
       return;
     }
 
-    const data = await storageGet({ [SITES_KEY]: [] });
-    const sites = Array.isArray(data[SITES_KEY]) ? data[SITES_KEY].slice() : [];
-    if (!sites.includes(parsed.origin)) {
-      sites.push(parsed.origin);
-      await storageSet({ [SITES_KEY]: sites });
-    }
-
-    siteInput.value = "";
-    renderSites(sites);
-
+    // Already have permission? Skip dialog and save immediately.
+    let already = false;
     try {
-      await chrome.runtime.sendMessage({ type: "sync-scripts" });
-      await chrome.runtime.sendMessage({
-        type: "inject-origin",
-        origin: parsed.origin,
+      already = await chrome.permissions.contains({
+        origins: [parsed.pattern],
       });
     } catch {
-      /* service worker may wake slowly */
+      already = false;
+    }
+
+    if (already) {
+      const sites = await addOriginToList(parsed.origin);
+      siteInput.value = "";
+      renderSites(sites);
+      await notifyBackground(parsed.origin);
+      return;
+    }
+
+    /*
+     * Save pending BEFORE the permission dialog.
+     * Chrome closes the popup when the dialog opens, so code after
+     * permissions.request often never runs. background.js finishes the add.
+     */
+    await chrome.storage.local.set({
+      [PENDING_KEY]: {
+        origin: parsed.origin,
+        pattern: parsed.pattern,
+        at: Date.now(),
+      },
+    });
+
+    let granted = false;
+    try {
+      granted = await chrome.permissions.request({
+        origins: [parsed.pattern],
+      });
+    } catch {
+      showSiteError("Could not request access for that site.");
+      await chrome.storage.local.remove(PENDING_KEY);
+      return;
+    }
+
+    // Only runs if the popup stayed open (some Chrome builds).
+    if (granted) {
+      const sites = await addOriginToList(parsed.origin);
+      await chrome.storage.local.remove(PENDING_KEY);
+      siteInput.value = "";
+      renderSites(sites);
+      await notifyBackground(parsed.origin);
+    } else {
+      await chrome.storage.local.remove(PENDING_KEY);
+      showSiteError("Permission was not granted.");
     }
   });
 
@@ -97,6 +148,25 @@
   });
 
   inputEl.addEventListener("input", updateOutput);
+
+  async function addOriginToList(origin) {
+    const data = await storageGet({ [SITES_KEY]: [] });
+    const sites = Array.isArray(data[SITES_KEY]) ? data[SITES_KEY].slice() : [];
+    if (!sites.includes(origin)) {
+      sites.push(origin);
+      await storageSet({ [SITES_KEY]: sites });
+    }
+    return sites;
+  }
+
+  async function notifyBackground(origin) {
+    try {
+      await chrome.runtime.sendMessage({ type: "sync-scripts" });
+      await chrome.runtime.sendMessage({ type: "inject-origin", origin });
+    } catch {
+      /* service worker may wake slowly */
+    }
+  }
 
   function updateOutput() {
     const raw = inputEl.value.trim();
@@ -156,7 +226,7 @@
     try {
       const u = new URL(s);
       if (u.protocol !== "http:" && u.protocol !== "https:") return null;
-      if (!u.hostname) return null;
+      if (!u.hostname || !u.hostname.includes(".")) return null;
       const origin = u.origin;
       return { origin, pattern: origin + "/*" };
     } catch {
@@ -184,10 +254,26 @@
   }
 
   function storageGet(defaults) {
-    return new Promise((resolve) => chrome.storage.sync.get(defaults, resolve));
+    return new Promise((resolve) => {
+      chrome.storage.sync.get(defaults, (data) => {
+        if (chrome.runtime.lastError) {
+          resolve(defaults);
+          return;
+        }
+        resolve(data);
+      });
+    });
   }
 
   function storageSet(obj) {
-    return new Promise((resolve) => chrome.storage.sync.set(obj, resolve));
+    return new Promise((resolve, reject) => {
+      chrome.storage.sync.set(obj, () => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+        resolve();
+      });
+    });
   }
 })();

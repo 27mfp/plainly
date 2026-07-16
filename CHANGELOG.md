@@ -2,6 +2,11 @@
 
 All notable changes to **Plainly** are listed here.
 
+## 1.3.1 — 2026-07-16
+
+### Fix
+- Adding a site works after the Chrome permission dialog (popup used to close before the site was saved)
+
 ## 1.3.0 — 2026-07-16
 
 ### Popup
