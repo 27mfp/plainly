@@ -11,22 +11,24 @@ const PENDING_KEY = "pendingSite";
 const LAST_ADDED_KEY = "lastSiteAdded";
 
 chrome.runtime.onInstalled.addListener(() => {
-  syncExtraScripts().catch(console.error);
+  syncExtraScripts().catch((e) => console.error("[Plainly] sync onInstalled", e));
 });
 
 chrome.runtime.onStartup.addListener(() => {
-  syncExtraScripts().catch(console.error);
+  syncExtraScripts().catch((e) => console.error("[Plainly] sync onStartup", e));
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "sync" && changes[SITES_KEY]) {
-    syncExtraScripts().catch(console.error);
+    syncExtraScripts().catch((e) => console.error("[Plainly] sync onStorage", e));
   }
 });
 
 /** Permission dialog closed the popup — finish adding the site here. */
 chrome.permissions.onAdded.addListener((perms) => {
-  handleOriginsGranted(perms.origins || []).catch(console.error);
+  handleOriginsGranted(perms.origins || []).catch((e) =>
+    console.error("[Plainly] onAdded", e)
+  );
 });
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
@@ -66,7 +68,7 @@ function patternToOrigin(pattern) {
   if (!pattern || typeof pattern !== "string") return null;
   try {
     if (pattern.startsWith("*://")) {
-      const hostPath = pattern.slice(4); // x.com/* or *.x.com/*
+      const hostPath = pattern.slice(4);
       const host = hostPath.replace(/\/\*$/, "").replace(/\/$/, "");
       if (!host || host.includes("*")) return null;
       return "https://" + host;
@@ -108,7 +110,6 @@ async function handleOriginsGranted(patterns) {
     if (origin && !isRedditOrigin(origin)) fromPerms.push(origin);
   }
 
-  // Prefer explicit pending site from the popup (set before the dialog).
   const local = await chrome.storage.local.get({ [PENDING_KEY]: null });
   const pending = local[PENDING_KEY];
   if (pending && pending.origin && !isRedditOrigin(pending.origin)) {
@@ -120,11 +121,15 @@ async function handleOriginsGranted(patterns) {
   const current = await getExtraSites();
   const newly = fromPerms.filter((o) => !current.includes(o));
   const next = [...new Set([...current, ...fromPerms])];
+
+  // storage.onChanged will call syncExtraScripts — do not call it again here.
   await saveExtraSites(next);
   await chrome.storage.local.remove(PENDING_KEY);
   if (newly.length) {
     await markSiteAdded(newly[newly.length - 1]);
   }
+
+  // Ensure scripts are registered even if storage event is delayed.
   await syncExtraScripts();
 
   for (const origin of fromPerms) {
@@ -158,7 +163,6 @@ async function finalizePending() {
       await syncExtraScripts();
       await injectIntoOpenTabs(pending.origin);
     } else if (!granted) {
-      // Still waiting, or user denied — drop stale pending after 10 minutes
       if (pending.at && Date.now() - pending.at > 10 * 60 * 1000) {
         await chrome.storage.local.remove(PENDING_KEY);
       }
@@ -180,40 +184,63 @@ async function markSiteAdded(origin) {
   });
 }
 
-/** Serialize syncs — storage.onChanged + onAdded + messages used to race. */
-let syncChain = Promise.resolve();
+// ─── Content-script registration (single-flight, unregister → register) ───
 
+let syncInFlight = null;
+let syncQueued = false;
+
+/**
+ * Coalesce concurrent sync requests into one in-flight run + at most one follow-up.
+ * Avoids parallel registerContentScripts (Chrome: Duplicate script ID).
+ */
 function syncExtraScripts() {
-  const run = () => syncExtraScriptsNow();
-  // Keep the chain alive even if a run fails
-  syncChain = syncChain.then(run, run);
-  return syncChain;
+  if (syncInFlight) {
+    syncQueued = true;
+    return syncInFlight;
+  }
+
+  syncInFlight = (async () => {
+    try {
+      do {
+        syncQueued = false;
+        await syncExtraScriptsNow();
+      } while (syncQueued);
+    } finally {
+      syncInFlight = null;
+    }
+  })();
+
+  return syncInFlight;
+}
+
+async function forceUnregisterOurScript() {
+  // Direct remove by id (throws if missing — ignore).
+  try {
+    await chrome.scripting.unregisterContentScripts({ ids: [SCRIPT_ID] });
+  } catch {
+    /* not registered */
+  }
+
+  // Sweep by listing — catches edge cases where id filter behaved oddly.
+  try {
+    const all = await chrome.scripting.getRegisteredContentScripts();
+    const ids = all.filter((s) => s.id === SCRIPT_ID).map((s) => s.id);
+    if (ids.length) {
+      await chrome.scripting.unregisterContentScripts({ ids });
+    }
+  } catch {
+    /* ignore */
+  }
 }
 
 async function syncExtraScriptsNow() {
   const sites = await getExtraSites();
   const matches = sites.map(originToMatch);
 
-  let registered = [];
-  try {
-    registered = await chrome.scripting.getRegisteredContentScripts({
-      ids: [SCRIPT_ID],
-    });
-  } catch {
-    registered = [];
-  }
-  const exists = registered.some((s) => s.id === SCRIPT_ID);
+  // Always clear first so we never hit "Duplicate script ID".
+  await forceUnregisterOurScript();
 
-  if (!sites.length) {
-    if (exists) {
-      try {
-        await chrome.scripting.unregisterContentScripts({ ids: [SCRIPT_ID] });
-      } catch {
-        /* already gone */
-      }
-    }
-    return;
-  }
+  if (!sites.length) return;
 
   const definition = {
     id: SCRIPT_ID,
@@ -224,21 +251,15 @@ async function syncExtraScriptsNow() {
     persistAcrossSessions: true,
   };
 
-  if (exists) {
-    await chrome.scripting.updateContentScripts([definition]);
-    return;
-  }
-
   try {
     await chrome.scripting.registerContentScripts([definition]);
   } catch (err) {
-    // Another path registered between get and register — update instead.
     const msg = err && err.message ? err.message : String(err);
-    if (/duplicate script id/i.test(msg)) {
-      await chrome.scripting.updateContentScripts([definition]);
-      return;
-    }
-    throw err;
+    if (!/duplicate script id/i.test(msg)) throw err;
+
+    // Last resort: clear again and retry once.
+    await forceUnregisterOurScript();
+    await chrome.scripting.registerContentScripts([definition]);
   }
 }
 

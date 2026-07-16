@@ -2,10 +2,15 @@
 
 All notable changes to **Plainly** are listed here.
 
+## 1.3.6 — 2026-07-16
+
+### Fix
+- Harder fix for `Duplicate script ID 'plainly-extra-sites'`: single-flight sync, always unregister then register, one retry
+
 ## 1.3.5 — 2026-07-16
 
 ### Fix
-- No more `Duplicate script ID 'plainly-extra-sites'` (serialize script sync; update if already registered)
+- First attempt at duplicate script ID race (still could fire under parallel paths)
 
 ## 1.3.4 — 2026-07-16
 
