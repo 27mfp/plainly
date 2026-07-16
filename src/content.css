@@ -1,0 +1,121 @@
+/* Base64 Decoder — inline decorations */
+
+.b64d-wrap {
+  display: inline;
+  position: relative;
+}
+
+.b64d-original {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  word-break: break-all;
+}
+
+.b64d-badge {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35em;
+  margin-left: 0.4em;
+  padding: 0.15em 0.5em 0.2em;
+  max-width: min(100%, 42rem);
+  vertical-align: middle;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.85em;
+  line-height: 1.35;
+  color: #0f3d2e;
+  background: linear-gradient(180deg, #e8faf3 0%, #d4f5e8 100%);
+  border: 1px solid #7dceb0;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(15, 61, 46, 0.08);
+  cursor: pointer;
+  user-select: text;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.b64d-badge:hover {
+  background: linear-gradient(180deg, #dff7ec 0%, #c5efdc 100%);
+  border-color: #4faf8a;
+  box-shadow: 0 2px 6px rgba(15, 61, 46, 0.12);
+}
+
+.b64d-badge:active {
+  transform: translateY(0.5px);
+}
+
+.b64d-badge.b64d-copied {
+  background: linear-gradient(180deg, #e8f0ff 0%, #d6e4ff 100%);
+  border-color: #7aa2e8;
+  color: #1a2f5a;
+}
+
+.b64d-badge.b64d-copied .b64d-label::after {
+  content: " · copied!";
+}
+
+.b64d-label {
+  flex-shrink: 0;
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1a7a54;
+  opacity: 0.9;
+}
+
+.b64d-badge.b64d-copied .b64d-label {
+  color: #2b5bb5;
+}
+
+.b64d-decoded {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 500;
+  word-break: break-all;
+  color: inherit;
+}
+
+/* Dark pages (Reddit dark mode, etc.) */
+@media (prefers-color-scheme: dark) {
+  .b64d-badge {
+    color: #c8f5e0;
+    background: linear-gradient(180deg, #1a3d30 0%, #143328 100%);
+    border-color: #2f7a5c;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  }
+
+  .b64d-badge:hover {
+    background: linear-gradient(180deg, #1f4a39 0%, #184032 100%);
+    border-color: #3d9a74;
+  }
+
+  .b64d-label {
+    color: #6fd4a8;
+  }
+
+  .b64d-badge.b64d-copied {
+    color: #c8d9ff;
+    background: linear-gradient(180deg, #1a2740 0%, #152033 100%);
+    border-color: #3d5f9a;
+  }
+
+  .b64d-badge.b64d-copied .b64d-label {
+    color: #8eb0f0;
+  }
+}
+
+/* Reddit often forces its own color scheme via html classes */
+html.theme-dark .b64d-badge,
+html[data-theme="dark"] .b64d-badge,
+body.res-nightmode .b64d-badge {
+  color: #c8f5e0;
+  background: linear-gradient(180deg, #1a3d30 0%, #143328 100%);
+  border-color: #2f7a5c;
+}
+
+html.theme-dark .b64d-label,
+html[data-theme="dark"] .b64d-label,
+body.res-nightmode .b64d-label {
+  color: #6fd4a8;
+}

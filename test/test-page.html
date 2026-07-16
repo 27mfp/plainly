@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Base64 Decoder — manual test page</title>
+    <link rel="stylesheet" href="../src/content.css" />
+    <style>
+      body {
+        max-width: 720px;
+        margin: 2rem auto;
+        padding: 0 1.25rem 3rem;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.55;
+        color: #1a1a1a;
+        background: #fafafa;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
+      .post {
+        padding: 1.25rem 1.4rem;
+        background: #fff;
+        border: 1px solid #e2e2e2;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      }
+      .meta {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 0.75rem;
+      }
+      .hint {
+        margin-top: 1.5rem;
+        padding: 0.9rem 1rem;
+        background: #eef6ff;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #1a3a5c;
+      }
+      code {
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Manual test (simulates a Reddit post)</h1>
+    <p class="meta">
+      Open this file via the extension (load unpacked → open this page), or open
+      directly after scripts inject below for local DOM check.
+    </p>
+
+    <article class="post" id="post">
+      <div class="meta">r/example · u/bookfinder · 2h ago</div>
+      <p>
+        maria was looking for a book, but all books title were in base64, the
+        list is the following:
+      </p>
+      <p>HR0cHM6Ly9wdGZsaXguY2Mv</p>
+      <p>aHR0cHM6Ly9tZWdhdHVnYS5pby8=</p>
+      <p>aHR0cHM6Ly93d3cuYmVzdGZyZWVzdHJlYW1pbmcub3JnLw==</p>
+      <p>
+        Also inline:
+        aHR0cHM6Ly9wdGZsaXguY2Mv should decode next to the string.
+      </p>
+    </article>
+
+    <div class="hint">
+      <strong>Expected:</strong> green “decoded” badges showing URLs next to
+      each Base64 string. Click a badge to copy. The first line
+      <code>HR0cHM6Ly9…</code> is truncated Base64 (missing leading
+      <code>a</code>); it may decode to partial text or be skipped depending on
+      validity — full strings below it should fully decode.
+    </div>
+
+    <script src="../src/decoder.js"></script>
+    <script src="../src/content.js"></script>
+    <script>
+      // Force a scan after load (content script also self-starts)
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.__b64d) window.__b64d.scheduleScan(document.body);
+      });
+    </script>
+  </body>
+</html>

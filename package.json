@@ -1,0 +1,13 @@
+{
+  "name": "base64decoder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome extension that auto-detects and decodes Base64 on pages like Reddit",
+  "scripts": {
+    "test": "node test/decoder.test.js",
+    "icons": "node scripts/generate-icons.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

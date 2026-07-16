@@ -1,0 +1,37 @@
+(function () {
+  "use strict";
+
+  const enabledEl = document.getElementById("enabled");
+  const inputEl = document.getElementById("input");
+  const outputEl = document.getElementById("output");
+  const D = globalThis.Base64Decoder;
+
+  chrome.storage.sync.get({ enabled: true }, (data) => {
+    enabledEl.checked = data.enabled !== false;
+  });
+
+  enabledEl.addEventListener("change", () => {
+    chrome.storage.sync.set({ enabled: enabledEl.checked });
+  });
+
+  function updateOutput() {
+    const raw = inputEl.value.trim();
+    if (!raw) {
+      outputEl.hidden = true;
+      outputEl.textContent = "";
+      outputEl.classList.remove("error");
+      return;
+    }
+    const decoded = D.decode(raw);
+    outputEl.hidden = false;
+    if (decoded) {
+      outputEl.classList.remove("error");
+      outputEl.textContent = decoded;
+    } else {
+      outputEl.classList.add("error");
+      outputEl.textContent = "Could not decode as valid Base64 text.";
+    }
+  }
+
+  inputEl.addEventListener("input", updateOutput);
+})();
