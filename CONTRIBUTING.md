@@ -20,7 +20,8 @@ npm run icons
 
 1. Chrome → `chrome://extensions` → **Load unpacked**  
 2. Reload the extension after changes  
-3. Set `GITHUB_URL` in `popup.js` to your real repo when you publish  
+3. Repo: https://github.com/27mfp/plainly  
+
 
 ### Code pointers
 

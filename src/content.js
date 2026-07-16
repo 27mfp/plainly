@@ -5,9 +5,14 @@
 (function () {
   "use strict";
 
+  // Guard against double inject (manifest + dynamic script / re-inject).
+  if (globalThis.__plainlyLoaded) return;
+  globalThis.__plainlyLoaded = true;
+
   const D = globalThis.Base64Decoder;
   if (!D) {
     console.error("[Plainly] decoder.js not loaded");
+    globalThis.__plainlyLoaded = false;
     return;
   }
 

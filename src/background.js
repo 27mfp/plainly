@@ -8,6 +8,7 @@
 const SCRIPT_ID = "plainly-extra-sites";
 const SITES_KEY = "extraSites";
 const PENDING_KEY = "pendingSite";
+const LAST_ADDED_KEY = "lastSiteAdded";
 
 chrome.runtime.onInstalled.addListener(() => {
   syncExtraScripts().catch(console.error);
@@ -117,9 +118,13 @@ async function handleOriginsGranted(patterns) {
   if (!fromPerms.length) return;
 
   const current = await getExtraSites();
+  const newly = fromPerms.filter((o) => !current.includes(o));
   const next = [...new Set([...current, ...fromPerms])];
   await saveExtraSites(next);
   await chrome.storage.local.remove(PENDING_KEY);
+  if (newly.length) {
+    await markSiteAdded(newly[newly.length - 1]);
+  }
   await syncExtraScripts();
 
   for (const origin of fromPerms) {
@@ -144,8 +149,10 @@ async function finalizePending() {
     }
 
     if (granted && pending.origin && !isRedditOrigin(pending.origin)) {
-      if (!sites.includes(pending.origin)) {
+      const wasNew = !sites.includes(pending.origin);
+      if (wasNew) {
         sites = await saveExtraSites([...sites, pending.origin]);
+        await markSiteAdded(pending.origin);
       }
       await chrome.storage.local.remove(PENDING_KEY);
       await syncExtraScripts();
@@ -159,6 +166,18 @@ async function finalizePending() {
   }
 
   return sites;
+}
+
+async function markSiteAdded(origin) {
+  let host = origin;
+  try {
+    host = new URL(origin).host;
+  } catch {
+    /* keep origin */
+  }
+  await chrome.storage.local.set({
+    [LAST_ADDED_KEY]: { origin, host, at: Date.now() },
+  });
 }
 
 async function syncExtraScripts() {

@@ -70,6 +70,22 @@ h1 {
   outline-offset: 1px;
 }
 
+.toast {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  border-radius: 8px;
+}
+
+.toast--ok {
+  color: #e4e4e7;
+  background: #18181b;
+  box-shadow:
+    0 0 0 1px rgb(161 161 170 / 0.25),
+    inset 0 0 0 1px rgb(255 255 255 / 0.04);
+}
+
 .toggle-row {
   position: relative;
   display: flex;

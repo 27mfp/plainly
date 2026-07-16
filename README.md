@@ -10,10 +10,14 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.3.0-18181b?style=flat-square" />
+  <a href="https://github.com/27mfp/plainly"><img alt="GitHub" src="https://img.shields.io/badge/github-27mfp%2Fplainly-18181b?style=flat-square" /></a>
+  <img alt="Version" src="https://img.shields.io/badge/version-1.3.2-18181b?style=flat-square" />
   <img alt="Manifest" src="https://img.shields.io/badge/manifest-V3-3f3f46?style=flat-square" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-52525b?style=flat-square" />
-  <img alt="Platform" src="https://img.shields.io/badge/Chrome-extension-27272a?style=flat-square" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshot.png" alt="Plainly showing plain text tags next to coded lines" width="720" />
 </p>
 
 ---
@@ -28,7 +32,7 @@ Posts sometimes hide links or messages as long coded strings. **Plainly** spots 
 - **Quiet zinc tags** with a thin RGB edge
 - **Open links** when the plain text is a web address
 - **Copy** with one click on the tag
-- **Add a site yourself** — paste a URL in the popup (Chrome asks for access; no GitHub PR needed)
+- **Add a site yourself** — paste a URL in the popup (Chrome asks for access)
 - **Private** — nothing leaves your browser ([PRIVACY.md](./PRIVACY.md))
 
 ## Example
@@ -44,9 +48,11 @@ aHR0cHM6Ly9tZWdhdHVnYS5pby8=
 1. Open Chrome → `chrome://extensions`
 2. Turn on **Developer mode**
 3. **Load unpacked** → choose this folder
-4. Open Reddit (or add a site in the popup) and refresh
+4. Open Reddit (or add a site in the popup) and **refresh** that tab
 
 Pin **Plainly** from the puzzle menu.
+
+Repo: [github.com/27mfp/plainly](https://github.com/27mfp/plainly)
 
 ## Use
 
@@ -55,13 +61,11 @@ Pin **Plainly** from the puzzle menu.
 | Read plain text | Zinc tag next to a coded line |
 | Open a link | Click the address in the tag |
 | Copy | Click the copy icon |
-| Add another website | Popup → **Sites** → paste `example.com` or a full URL → **Add** → allow access → refresh that tab |
+| Add another website | Popup → **Sites** → paste `example.com` → **Add** → allow access → **refresh that tab** |
 | Remove a site | Popup → **×** next to the site |
 | Turn off | Popup → **On** switch |
 | Try a code | Paste it under **Try a code** |
-| GitHub | Octocat icon in the popup header |
-
-> Set your repo URL in `popup.js` (`GITHUB_URL`) when you publish.
+| GitHub | Icon in the popup header |
 
 ## Develop
 
@@ -74,14 +78,14 @@ npm run icons
 plainly/
 ├── manifest.json
 ├── icons/
+├── docs/screenshot.png
 ├── src/
-│   ├── background.js   # registers scripts for user sites
+│   ├── background.js
 │   ├── decoder.js
 │   ├── content.js
 │   └── content.css
 ├── popup.html / .css / .js
-├── test/
-└── docs (PRIVACY, SECURITY, CHANGELOG, CONTRIBUTING)
+└── test/
 ```
 
 ## Privacy & security

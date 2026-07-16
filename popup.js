@@ -1,11 +1,11 @@
 (function () {
   "use strict";
 
-  /** Set this to your public repo when you publish. */
-  const GITHUB_URL = "https://github.com/";
+  const GITHUB_URL = "https://github.com/27mfp/plainly";
 
   const SITES_KEY = "extraSites";
   const PENDING_KEY = "pendingSite";
+  const LAST_ADDED_KEY = "lastSiteAdded";
 
   const enabledEl = document.getElementById("enabled");
   const inputEl = document.getElementById("input");
@@ -14,6 +14,7 @@
   const siteInput = document.getElementById("site-input");
   const siteList = document.getElementById("site-list");
   const siteError = document.getElementById("site-error");
+  const toastEl = document.getElementById("toast");
   const githubEl = document.getElementById("github");
   const D = globalThis.Base64Decoder;
 
@@ -35,11 +36,11 @@
       /* service worker waking */
     }
 
-    // Also re-read storage after finalize
     const fresh = await storageGet({ [SITES_KEY]: [] });
     if (Array.isArray(fresh[SITES_KEY])) sites = fresh[SITES_KEY];
 
     renderSites(sites);
+    await showPendingSuccessToast();
   }
 
   enabledEl.addEventListener("change", () => {
@@ -49,6 +50,7 @@
   siteForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     clearSiteError();
+    hideToast();
 
     const parsed = parseSiteInput(siteInput.value);
     if (!parsed) {
@@ -60,16 +62,15 @@
       return;
     }
 
-    // Already in the list?
     const existing = await storageGet({ [SITES_KEY]: [] });
     const current = Array.isArray(existing[SITES_KEY]) ? existing[SITES_KEY] : [];
     if (current.includes(parsed.origin)) {
       siteInput.value = "";
       renderSites(current);
+      showSuccess(hostOf(parsed.origin) + " is already added.");
       return;
     }
 
-    // Already have permission? Skip dialog and save immediately.
     let already = false;
     try {
       already = await chrome.permissions.contains({
@@ -84,13 +85,13 @@
       siteInput.value = "";
       renderSites(sites);
       await notifyBackground(parsed.origin);
+      await markAndShowSuccess(parsed.origin);
       return;
     }
 
     /*
      * Save pending BEFORE the permission dialog.
-     * Chrome closes the popup when the dialog opens, so code after
-     * permissions.request often never runs. background.js finishes the add.
+     * Chrome closes the popup when the dialog opens; background finishes the add.
      */
     await chrome.storage.local.set({
       [PENDING_KEY]: {
@@ -111,13 +112,13 @@
       return;
     }
 
-    // Only runs if the popup stayed open (some Chrome builds).
     if (granted) {
       const sites = await addOriginToList(parsed.origin);
       await chrome.storage.local.remove(PENDING_KEY);
       siteInput.value = "";
       renderSites(sites);
       await notifyBackground(parsed.origin);
+      await markAndShowSuccess(parsed.origin);
     } else {
       await chrome.storage.local.remove(PENDING_KEY);
       showSiteError("Permission was not granted.");
@@ -134,6 +135,7 @@
     );
     await storageSet({ [SITES_KEY]: sites });
     renderSites(sites);
+    hideToast();
 
     try {
       await chrome.permissions.remove({ origins: [origin + "/*"] });
@@ -166,6 +168,52 @@
     } catch {
       /* service worker may wake slowly */
     }
+  }
+
+  async function markAndShowSuccess(origin) {
+    const host = hostOf(origin);
+    await chrome.storage.local.set({
+      [LAST_ADDED_KEY]: { origin, host, at: Date.now() },
+    });
+    showSuccess(host + " added. Refresh that tab to see tags.");
+  }
+
+  async function showPendingSuccessToast() {
+    try {
+      const local = await chrome.storage.local.get({ [LAST_ADDED_KEY]: null });
+      const last = local[LAST_ADDED_KEY];
+      if (!last || !last.host || !last.at) return;
+      // Show for a minute after add (covers popup reopen after permission dialog)
+      if (Date.now() - last.at > 60 * 1000) {
+        await chrome.storage.local.remove(LAST_ADDED_KEY);
+        return;
+      }
+      showSuccess(last.host + " added. Refresh that tab to see tags.");
+      await chrome.storage.local.remove(LAST_ADDED_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function hostOf(origin) {
+    try {
+      return new URL(origin).host;
+    } catch {
+      return origin;
+    }
+  }
+
+  function showSuccess(msg) {
+    if (!toastEl) return;
+    toastEl.hidden = false;
+    toastEl.className = "toast toast--ok";
+    toastEl.textContent = msg;
+  }
+
+  function hideToast() {
+    if (!toastEl) return;
+    toastEl.hidden = true;
+    toastEl.textContent = "";
   }
 
   function updateOutput() {

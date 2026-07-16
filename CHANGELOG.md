@@ -2,6 +2,14 @@
 
 All notable changes to **Plainly** are listed here.
 
+## 1.3.2 — 2026-07-16
+
+### Polish
+- Success toast after adding a site + “refresh that tab” hint
+- Content script re-entry guard (no double tags on re-inject)
+- GitHub: https://github.com/27mfp/plainly
+- README screenshot
+
 ## 1.3.1 — 2026-07-16
 
 ### Fix
