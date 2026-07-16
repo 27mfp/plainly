@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Plainly",
   "short_name": "Plainly",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "description": "Turns coded text into plain, readable text on Reddit and any site you add.",
   "homepage_url": "https://github.com/27mfp/plainly",
   "icons": {

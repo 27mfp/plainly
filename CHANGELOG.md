@@ -2,6 +2,11 @@
 
 All notable changes to **Plainly** are listed here.
 
+## 1.3.5 — 2026-07-16
+
+### Fix
+- No more `Duplicate script ID 'plainly-extra-sites'` (serialize script sync; update if already registered)
+
 ## 1.3.4 — 2026-07-16
 
 ### UI

@@ -180,28 +180,66 @@ async function markSiteAdded(origin) {
   });
 }
 
-async function syncExtraScripts() {
-  const sites = await getExtraSites();
+/** Serialize syncs — storage.onChanged + onAdded + messages used to race. */
+let syncChain = Promise.resolve();
 
+function syncExtraScripts() {
+  const run = () => syncExtraScriptsNow();
+  // Keep the chain alive even if a run fails
+  syncChain = syncChain.then(run, run);
+  return syncChain;
+}
+
+async function syncExtraScriptsNow() {
+  const sites = await getExtraSites();
+  const matches = sites.map(originToMatch);
+
+  let registered = [];
   try {
-    await chrome.scripting.unregisterContentScripts({ ids: [SCRIPT_ID] });
+    registered = await chrome.scripting.getRegisteredContentScripts({
+      ids: [SCRIPT_ID],
+    });
   } catch {
-    /* not registered yet */
+    registered = [];
+  }
+  const exists = registered.some((s) => s.id === SCRIPT_ID);
+
+  if (!sites.length) {
+    if (exists) {
+      try {
+        await chrome.scripting.unregisterContentScripts({ ids: [SCRIPT_ID] });
+      } catch {
+        /* already gone */
+      }
+    }
+    return;
   }
 
-  if (!sites.length) return;
+  const definition = {
+    id: SCRIPT_ID,
+    matches,
+    js: ["src/decoder.js", "src/content.js"],
+    css: ["src/content.css"],
+    runAt: "document_idle",
+    persistAcrossSessions: true,
+  };
 
-  const matches = sites.map(originToMatch);
-  await chrome.scripting.registerContentScripts([
-    {
-      id: SCRIPT_ID,
-      matches,
-      js: ["src/decoder.js", "src/content.js"],
-      css: ["src/content.css"],
-      runAt: "document_idle",
-      persistAcrossSessions: true,
-    },
-  ]);
+  if (exists) {
+    await chrome.scripting.updateContentScripts([definition]);
+    return;
+  }
+
+  try {
+    await chrome.scripting.registerContentScripts([definition]);
+  } catch (err) {
+    // Another path registered between get and register — update instead.
+    const msg = err && err.message ? err.message : String(err);
+    if (/duplicate script id/i.test(msg)) {
+      await chrome.scripting.updateContentScripts([definition]);
+      return;
+    }
+    throw err;
+  }
 }
 
 /** Best-effort inject into already-open tabs (refresh still helps). */
