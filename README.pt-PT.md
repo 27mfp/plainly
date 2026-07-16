@@ -45,7 +45,7 @@ O Plainly mostra: `https://github.com/27mfp/plainly`
 
 1. Abre o Chrome → `chrome://extensions`  
 2. Liga o **Modo de programador**  
-3. Clica em **Carregar sem compactação** e escolhe esta pasta  
+3. Clica em **Carregar expandida** e escolhe esta pasta  
 4. Abre o Reddit (ou um site que tenhas adicionado) e **atualiza** o separador  
 
 Podes fixar o Plainly no menu do puzzle do Chrome.
