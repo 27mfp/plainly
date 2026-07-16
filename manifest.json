@@ -3,7 +3,7 @@
   "name": "Plainly",
   "short_name": "Plainly",
   "version": "1.4.0",
-  "description": "Turns coded text into plain, readable text on Reddit and any site you add.",
+  "description": "Turns coded text into plain text on Reddit and any site you add.",
   "homepage_url": "https://github.com/27mfp/plainly",
   "icons": {
     "16": "icons/icon16.png",

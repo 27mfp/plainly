@@ -46,28 +46,26 @@
   <body>
     <h1>Plainly — local test</h1>
     <p class="meta">
-      Preview only. The real extension runs on Reddit. This page loads the same
-      scripts so you can check the zinc tags without opening Reddit.
+      Local preview only. Open this file to check the tags without Reddit.
     </p>
 
     <article class="post" id="post">
       <div class="meta">r/example · u/bookfinder · 2h ago</div>
       <p>
-        maria was looking for a book, but all books title were in base64, the
-        list is the following:
+        maria was looking for a book, but all book titles were coded. The list:
       </p>
       <p>aHR0cHM6Ly90djA4MDAucHJvLw==</p>
       <p>aHR0cHM6Ly9tZWdhdHVnYS5pby8=</p>
       <p>aHR0cHM6Ly93d3cuYmVzdGZyZWVzdHJlYW1pbmcub3JnLw==</p>
       <p>
-        Also inline:
-        aHR0cHM6Ly9wdGZsaXguY2Mv should decode next to the string.
+        Inline too:
+        aHR0cHM6Ly9wdGZsaXguY2Mv should show plain text next to it.
       </p>
     </article>
 
     <div class="hint">
-      <strong>Expected:</strong> a zinc tag with a thin RGB border, the plain
-      text (clickable when it’s a URL), and a copy icon.
+      <strong>Expected:</strong> a small grey tag with the plain text (a link
+      if it’s a URL) and a copy icon.
     </div>
 
     <script src="../src/decoder.js"></script>

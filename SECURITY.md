@@ -2,23 +2,23 @@
 
 ## Supported versions
 
-| Version | Supported |
+| Version | Support |
 | --- | --- |
-| 1.2.x   | Yes       |
-| &lt; 1.2 | Best effort |
+| Latest (1.4.x) | Yes |
+| Older | Best effort |
 
-## Reporting a problem
+## Report a problem
 
-If you find a security issue (for example unexpected access, data leaving the browser, or a bad permission request):
+If you find something that could let data leave the browser, grant too much access, or break security:
 
-1. **Do not** open a public issue with exploit details.
-2. Prefer a private security advisory on [github.com/27mfp/plainly](https://github.com/27mfp/plainly), or contact the maintainer without public exploit details.
-3. Include steps to reproduce and the extension version from the popup.
+1. **Do not** post full exploit steps in a public issue.  
+2. Use a private security report on [github.com/27mfp/plainly](https://github.com/27mfp/plainly), or contact the maintainer privately.  
+3. Say how to reproduce it and which version you use.
 
-We aim to respond within a few days and fix serious issues quickly.
+We try to reply within a few days and fix serious issues quickly.
 
-## Design notes
+## How Plainly is built (short)
 
-- No network calls from the extension for decoding
-- Only Reddit host matches by default
-- Only the on/off preference is stored
+- Decoding happens in the browser only — no network call for that  
+- Reddit works by default; other sites only after you allow them  
+- Only on/off and your site list are saved  

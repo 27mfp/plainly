@@ -2,7 +2,7 @@
   "name": "plainly",
   "version": "1.4.0",
   "private": true,
-  "description": "Plainly — turns coded text into plain text on Reddit and sites you add",
+  "description": "Plainly — coded text to plain text on Reddit and sites you add",
   "homepage": "https://github.com/27mfp/plainly",
   "repository": {
     "type": "git",

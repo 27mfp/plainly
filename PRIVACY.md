@@ -1,30 +1,29 @@
 # Privacy
 
-**Plainly** stays on your device.
+**Plainly** works only on your computer.
 
 ## What we collect
 
-**Nothing is sent to any server.** No analytics, tracking, accounts, or remote decode API.
+**Nothing is sent to any server.**  
+No analytics, no tracking, no accounts, no online “decode” service.
 
 ## What stays on your device
 
-| Item | Where | Why |
+| What | Where | Why |
 | --- | --- | --- |
-| On / off | Chrome sync storage | Remember if tags should show |
-| Extra sites you added | Chrome sync storage | Remember which sites to run on |
+| On / off | Chrome’s own storage (can sync with your Google account if you use sync) | Remember if tags should show |
+| Sites you added | Same storage | Remember which sites to run on |
 
 Coded lines are turned into plain text **only in your browser**.
 
-## Permissions
+## Permissions (in plain words)
 
 | Permission | Why |
 | --- | --- |
-| Reddit (built-in) | Show plain text on Reddit |
-| Optional site access | Only for sites **you** add; Chrome asks each time |
-| `storage` | Save on/off and your site list |
-| `scripting` | Inject plain-text helper on sites you approved |
-| `activeTab` | Read the current tab’s address for **Add this site** (only when you open the popup) |
+| Reddit | Show plain text on Reddit |
+| Other sites you pick | Only after you click Add and allow them |
+| Storage | Save on/off and your site list |
+| Run scripts on allowed pages | Show the plain text tags |
+| Active tab | So **Add this site** can see which page you’re on (when you open the menu) |
 
-Dynamic sites use on-demand injection when a matching tab finishes loading — not a permanent “run on all URLs” registration.
-
-We do not ask for history, cookies, or blanket “all websites” access up front.
+We do **not** ask for your history, cookies, or “all websites” up front.

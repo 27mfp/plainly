@@ -1,39 +1,35 @@
 <p align="center">
-  <img src="icons/icon128.png" width="96" height="96" alt="Plainly icon" />
+  <img src="icons/icon128.png" width="96" height="96" alt="Plainly" />
 </p>
 
 <h1 align="center">Plainly</h1>
 
 <p align="center">
   <strong>Coded text → plain text you can read.</strong><br />
-  Works on Reddit out of the box. Add any other site from the popup.
+  Works on Reddit right away. Add other websites from the menu.
 </p>
 
 <p align="center">
   <a href="https://github.com/27mfp/plainly"><img alt="GitHub" src="https://img.shields.io/badge/github-27mfp%2Fplainly-18181b?style=flat-square" /></a>
-  <img alt="Version" src="https://img.shields.io/badge/version-1.3.3-18181b?style=flat-square" />
-  <img alt="Manifest" src="https://img.shields.io/badge/manifest-V3-3f3f46?style=flat-square" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.4.0-18181b?style=flat-square" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-52525b?style=flat-square" />
 </p>
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="Plainly showing plain text tags next to coded lines" width="720" />
+  <img src="docs/screenshot.png" alt="Coded line with plain text next to it" width="640" />
 </p>
 
 ---
 
-## Why Plainly?
+## What it does
 
-Posts sometimes hide links or messages as long coded strings. **Plainly** spots them and shows the readable version right next to the code.
+Some posts hide links or messages as long coded strings. **Plainly** finds them and shows the readable version next to the code.
 
-## Features
-
-- **Automatic** on Reddit and any site you add
-- **Quiet zinc tags** with a thin RGB edge
-- **Open links** when the plain text is a web address
-- **Copy** with one click on the tag
-- **Add a site yourself** — paste a URL in the popup (Chrome asks for access)
-- **Private** — nothing leaves your browser ([PRIVACY.md](./PRIVACY.md))
+- Works automatically on Reddit  
+- You can add more sites yourself  
+- If the plain text is a link, you can open it  
+- Copy with one click  
+- Nothing is sent to any server — see [PRIVACY.md](./PRIVACY.md)
 
 ## Example
 
@@ -41,34 +37,33 @@ Posts sometimes hide links or messages as long coded strings. **Plainly** spots 
 aHR0cHM6Ly9tZWdhdHVnYS5pby8=
 ```
 
-→ tag shows `https://megatuga.io/`
+Plainly shows: `https://megatuga.io/`
 
 ## Install
 
-1. Open Chrome → `chrome://extensions`
-2. Turn on **Developer mode**
-3. **Load unpacked** → choose this folder
-4. Open Reddit (or add a site in the popup) and **refresh** that tab
+1. Open Chrome → `chrome://extensions`  
+2. Turn on **Developer mode**  
+3. Click **Load unpacked** and pick this folder  
+4. Open Reddit (or a site you added) and **refresh** the tab  
 
-Pin **Plainly** from the puzzle menu.
+Pin Plainly from Chrome’s puzzle menu if you want the icon always visible.
 
-Repo: [github.com/27mfp/plainly](https://github.com/27mfp/plainly)
+**Code:** [github.com/27mfp/plainly](https://github.com/27mfp/plainly)
 
-## Use
+## How to use
 
-| Action | How |
+| Want to… | Do this |
 | --- | --- |
-| Read plain text | Zinc tag next to a coded line |
+| Read plain text | Look for the grey tag next to a coded line |
 | Open a link | Click the address in the tag |
-| Copy | Click the copy icon |
-| Add the page you’re on | Popup → **Add this site** (uses the site only, not the full path) → allow → **refresh** |
-| Add another website | Popup → paste `example.com` or a URL → **Add** → allow → **refresh** |
-| Remove a site | Popup → **×** next to the site |
-| Turn off | Popup → **On** switch |
-| Try a code | Paste it under **Try a code** |
-| GitHub | Icon in the popup header |
+| Copy the plain text | Click the copy icon on the tag |
+| Use the site you’re on | Open the popup → **Add this site** → allow → **refresh** |
+| Add another site | Popup → type `example.com` → **Add** → allow → **refresh** |
+| Remove a site | Popup → **×** next to the name |
+| Turn Plainly off | Popup → **On** switch |
+| Check a code by hand | Paste it under **Try a code** |
 
-## Develop
+## For developers
 
 ```bash
 npm test
@@ -77,22 +72,20 @@ npm run icons
 
 ```text
 plainly/
-├── manifest.json
-├── icons/
-├── docs/screenshot.png
-├── src/
-│   ├── background.js
-│   ├── decoder.js
-│   ├── content.js
-│   └── content.css
-├── popup.html / .css / .js
-└── test/
+├── manifest.json      Chrome extension settings
+├── icons/             App icons
+├── docs/              Screenshot
+├── src/               Extension code
+├── popup.*            Toolbar menu
+└── test/              Tests and local preview page
 ```
+
+How to contribute: [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ## Privacy & security
 
-- No analytics or remote decode API  
-- Reddit is built-in; other sites only after you approve them in Chrome  
-- Storage: on/off switch + your site list  
+- No tracking, no accounts, no remote servers  
+- Reddit works out of the box; other sites only after you allow them  
+- Saves only: on/off, and the site list you added  
 
-[PRIVACY.md](./PRIVACY.md) · [SECURITY.md](./SECURITY.md) · [LICENSE](./LICENSE) (MIT)
+[Privacy](./PRIVACY.md) · [Security](./SECURITY.md) · [License (MIT)](./LICENSE)
