@@ -2,6 +2,17 @@
 
 All notable changes to **Plainly** are listed here.
 
+## 1.3.0 — 2026-07-16
+
+### Popup
+- Slimmer menu (less text)
+- GitHub icon in the header
+- **Add site by URL** — Chrome permission prompt, no PR required
+
+### Engine
+- Background worker registers content scripts for user sites
+- Optional host permissions for sites you add
+
 ## 1.2.0 — 2026-07-16
 
 ### Brand & UI

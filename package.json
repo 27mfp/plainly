@@ -1,8 +1,8 @@
 {
   "name": "plainly",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": true,
-  "description": "Plainly — turns coded text on Reddit into plain, readable text",
+  "description": "Plainly — turns coded text into plain text on Reddit and sites you add",
   "scripts": {
     "test": "node test/decoder.test.js",
     "icons": "node scripts/generate-icons.js"

@@ -2,52 +2,33 @@
 
 Thanks for helping improve **Plainly**.
 
-## What Plainly is
+## Users: add a site without code
 
-A Chrome extension that finds coded text on **Reddit** and shows the plain version next to it. The UI is zinc-coloured and deliberately quiet.
+1. Open the Plainly popup  
+2. Under **Sites**, paste `example.com` or a full URL  
+3. Click **Add** and allow access when Chrome asks  
+4. Refresh that site  
 
-## Scope today
+Reddit is always included.
 
-Only Reddit:
-
-```json
-"matches": [
-  "*://*.reddit.com/*",
-  "*://reddit.com/*"
-]
-```
-
-## Adding another website
-
-1. Fork and create a branch.
-2. Edit `manifest.json` → `content_scripts[0].matches` with patterns for the site you tested only.
-3. If the site needs special page handling, extend `src/content.js` carefully.
-4. Note the site under **Supported sites** in `README.md`.
-5. Test with real samples (light and dark themes if the site has them).
-6. Open a pull request: what site, which URLs, how you tested.
-
-### Guidelines
-
-- Prefer the narrowest URL patterns that work.
-- Do not switch to `"<all_urls>"` without discussion.
-- Keep the zinc tag look consistent.
-- Keep reading logic in `src/decoder.js` so tests stay meaningful.
-
-## Local setup
+## Developers
 
 ```bash
 npm test
-npm run icons   # rebuild icons from icons/icon-source.jpg (needs Python + Pillow)
+npm run icons
 ```
 
-1. Chrome → `chrome://extensions` → **Developer mode** → **Load unpacked** → this folder  
-2. After changes, **Reload** the extension  
-3. Refresh Reddit  
+1. Chrome → `chrome://extensions` → **Load unpacked**  
+2. Reload the extension after changes  
+3. Set `GITHUB_URL` in `popup.js` to your real repo when you publish  
 
-Local UI without Reddit: open `test/test-page.html`.
+### Code pointers
 
-## Code style
+- `src/decoder.js` — find and read coded text (keep tests green)
+- `src/content.js` / `content.css` — page tags
+- `src/background.js` — user-added sites
+- Prefer narrow permissions; don’t force `<all_urls>` as required
 
-- Plain JavaScript, Manifest V3, no build step for the extension itself
-- Avoid large dependencies
-- Only show tags when the result looks like normal readable text
+### Pull requests
+
+Improvements to decoding quality, UI, docs, and bug fixes are welcome. Site support for end users should stay in the popup “Add site” flow whenever possible.

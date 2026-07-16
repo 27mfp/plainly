@@ -1,30 +1,27 @@
 # Privacy
 
-**Plainly** is built to stay small and private.
+**Plainly** stays on your device.
 
 ## What we collect
 
-**Nothing from your browsing is sent anywhere.**
-
-There is no analytics, no tracking, no remote server, and no account.
+**Nothing is sent to any server.** No analytics, tracking, accounts, or remote decode API.
 
 ## What stays on your device
 
 | Item | Where | Why |
 | --- | --- | --- |
-| On / off switch | Chrome sync storage (on your Google account devices, if sync is on) | Remember whether plain text tags should show |
+| On / off | Chrome sync storage | Remember if tags should show |
+| Extra sites you added | Chrome sync storage | Remember which sites to run on |
 
-Coded lines are read and turned into plain text **only in your browser**, on the page you are viewing.
+Coded lines are turned into plain text **only in your browser**.
 
 ## Permissions
 
 | Permission | Why |
 | --- | --- |
-| Host access to `reddit.com` | Find coded text in posts and show plain text next to it |
-| `storage` | Save the on/off switch |
+| Reddit (built-in) | Show plain text on Reddit |
+| Optional site access | Only for sites **you** add; Chrome asks each time |
+| `storage` | Save on/off and your site list |
+| `scripting` | Run on sites you approved |
 
-We do **not** ask for history, tabs, cookies, or broad “read all websites” access.
-
-## Questions
-
-Open an issue in the project repository if you have privacy questions.
+We do not ask for history, cookies, or blanket “all websites” access up front.
