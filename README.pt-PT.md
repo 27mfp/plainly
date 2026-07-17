@@ -44,11 +44,14 @@ O Plainly mostra: `https://github.com/27mfp/plainly`
 
 ## Instalar
 
+Primeiro descarrega ou clona o projeto: [github.com/27mfp/plainly](https://github.com/27mfp/plainly)  
+(Usa a pasta raiz — a que contém o [`manifest.json`](./manifest.json).)
+
 ### Chrome / Edge / Brave
 
 1. Abre `chrome://extensions` (ou `edge://extensions`)  
 2. Liga o **Modo de programador**  
-3. Clica em **Carregar expandida** e escolhe esta pasta  
+3. Clica em **Carregar expandida** e escolhe **a pasta do projeto** (a que tem o [`manifest.json`](./manifest.json) dentro — não uma subpasta)  
 4. Abre o Reddit (ou um site que tenhas adicionado) e **atualiza** o separador  
 
 Podes fixar o Plainly no menu do puzzle das extensões.
@@ -57,12 +60,12 @@ Podes fixar o Plainly no menu do puzzle das extensões.
 
 1. Abre `about:debugging#/runtime/this-firefox`  
 2. Clica em **Carregar complemento temporário…**  
-3. Escolhe o `manifest.json` desta pasta  
+3. Escolhe o ficheiro **[`manifest.json`](./manifest.json)** na raiz do projeto (não uses pastas `dist` / `dist-firefox`)  
 4. Abre o Reddit (ou um site que tenhas adicionado) e **atualiza** o separador  
 
-Complementos temporários são removidos quando o Firefox reinicia. Para instalação permanente, assina o complemento (ou instala em [addons.mozilla.org](https://addons.mozilla.org) quando publicado).
+Complementos temporários são removidos quando o Firefox reinicia. Para instalação permanente: `npm run package:firefox` e usa o zip, ou instala em [addons.mozilla.org](https://addons.mozilla.org) quando publicado.
 
-**Código:** [github.com/27mfp/plainly](https://github.com/27mfp/plainly)
+**Código:** [github.com/27mfp/plainly](https://github.com/27mfp/plainly) · **Ficheiro de configuração:** [`manifest.json`](./manifest.json)
 
 ## Como usar
 

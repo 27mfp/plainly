@@ -46,11 +46,14 @@ Plainly shows: [`https://github.com/27mfp/plainly`](https://github.com/27mfp/pla
 
 ## Install
 
+Download or clone the repo first: [github.com/27mfp/plainly](https://github.com/27mfp/plainly)  
+(Use the project root — the folder that contains [`manifest.json`](./manifest.json).)
+
 ### Chrome / Edge / Brave
 
 1. Open `chrome://extensions` (or `edge://extensions`)  
 2. Turn on **Developer mode**  
-3. Click **Load unpacked** and pick this folder  
+3. Click **Load unpacked** and pick **this project folder** (the one with [`manifest.json`](./manifest.json) inside — not a subfolder)  
 4. Open Reddit (or a site you added) and **refresh** the tab  
 
 Pin Plainly from the extensions puzzle menu if you want the icon always visible.
@@ -59,12 +62,12 @@ Pin Plainly from the extensions puzzle menu if you want the icon always visible.
 
 1. Open `about:debugging#/runtime/this-firefox`  
 2. Click **Load Temporary Add-on…**  
-3. Pick `manifest.json` in this folder  
+3. Select the root file **[`manifest.json`](./manifest.json)** (open it from the project folder — not anything under `dist` / `dist-firefox`)  
 4. Open Reddit (or a site you added) and **refresh** the tab  
 
-Temporary add-ons are removed when Firefox restarts. For a permanent install, pack and sign the extension (or install from [addons.mozilla.org](https://addons.mozilla.org) when published).
+Temporary add-ons are removed when Firefox restarts. For a permanent install, run `npm run package:firefox` and use that zip, or install from [addons.mozilla.org](https://addons.mozilla.org) when published.
 
-**Code:** [github.com/27mfp/plainly](https://github.com/27mfp/plainly)
+**Code:** [github.com/27mfp/plainly](https://github.com/27mfp/plainly) · **Settings file:** [`manifest.json`](./manifest.json)
 
 ## How to use
 

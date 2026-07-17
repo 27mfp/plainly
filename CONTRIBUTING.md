@@ -22,12 +22,12 @@ npm run package:firefox
 
 ### Chrome
 
-1. `chrome://extensions` → **Load unpacked** → this folder (root `manifest.json`)  
+1. `chrome://extensions` → **Load unpacked** → **project root folder** (the one that contains [`manifest.json`](./manifest.json))  
 2. After you change code, click **Reload** on the extension, then refresh the page  
 
 ### Firefox
 
-1. Temporary: `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** → root `manifest.json`  
+1. Temporary: `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** → select root **[`manifest.json`](./manifest.json)** (not under `dist` / `dist-firefox`)  
 2. AMO package: `npm run package:firefox` → use the generated zip  
 3. After you change code, click **Reload** next to the extension, then refresh the page  
 
@@ -37,6 +37,7 @@ Repo: https://github.com/27mfp/plainly
 
 | File | Role |
 | --- | --- |
+| [`manifest.json`](./manifest.json) | Extension settings (load this folder / this file) |
 | `src/decoder.js` | Finds and reads coded text (keep tests passing) |
 | `src/content.js` | Puts plain text on the page |
 | `src/content.css` | Look of the tags |
