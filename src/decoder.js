@@ -18,6 +18,12 @@
   const MAX_LENGTH = 4096;
 
   /**
+   * Max nested base64 layers (e.g. b64 → b64 → URL).
+   * Common on wiki/list sites that wrap pastebin URLs or re-encode links.
+   */
+  const MAX_NEST_DEPTH = 5;
+
+  /**
    * Base64 alphabet chunk. Requires enough entropy to look intentional.
    * Allows optional whitespace that we strip before decode.
    */
@@ -42,11 +48,11 @@
   }
 
   /**
-   * Decode base64 to a UTF-8 string. Returns null on failure.
+   * Single-layer base64 → UTF-8. Returns null on failure.
    * @param {string} input
    * @returns {string|null}
    */
-  function decode(input) {
+  function decodeOnce(input) {
     if (typeof input !== "string") return null;
     const padded = padBase64(input);
     if (!padded || padded.length < MIN_LENGTH || padded.length > MAX_LENGTH) {
@@ -87,6 +93,26 @@
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Decode base64 to UTF-8, unwrapping nested layers when the result is
+   * still pure base64 (e.g. b64 → b64 → https://…).
+   * @param {string} input
+   * @returns {string|null}
+   */
+  function decode(input) {
+    let text = decodeOnce(input);
+    if (!text) return null;
+
+    for (let depth = 1; depth < MAX_NEST_DEPTH; depth++) {
+      const layer = text.trim();
+      if (!looksLikeBase64(layer)) break;
+      const next = decodeOnce(layer);
+      if (!next || next === text) break;
+      text = next;
+    }
+    return text;
   }
 
   /**
@@ -190,7 +216,9 @@
   return {
     MIN_LENGTH,
     MAX_LENGTH,
+    MAX_NEST_DEPTH,
     padBase64,
+    decodeOnce,
     decode,
     looksLikeBase64,
     findDecodings,

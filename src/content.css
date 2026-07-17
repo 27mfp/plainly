@@ -168,7 +168,7 @@ a.b64d-decoded:focus-visible {
 
 .b64d-badge.b64d-copied .b64d-copy {
   opacity: 1;
-  color: var(--b64d-copied);
+  color: #16a34a; /* green check after copy */
 }
 
 @keyframes b64d-in {

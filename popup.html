@@ -9,9 +9,19 @@
   <body>
     <header>
       <div class="logo" aria-hidden="true">
-        <img src="icons/icon48.png" width="32" height="32" alt="" />
+        <img src="icons/icon48.png" width="22" height="22" alt="" />
       </div>
       <h1>Plainly</h1>
+      <label class="switch-wrap" title="Turn Plainly on or off">
+        <span class="sr-only" id="enabled-label">On</span>
+        <input
+          type="checkbox"
+          id="enabled"
+          checked
+          aria-labelledby="enabled-label"
+        />
+        <span class="switch" aria-hidden="true"></span>
+      </label>
       <a
         class="icon-btn"
         id="github"
@@ -19,9 +29,9 @@
         target="_blank"
         rel="noopener noreferrer"
         title="GitHub"
-        aria-label="GitHub"
+        aria-label="Open Plainly on GitHub"
       >
-        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="currentColor">
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor">
           <path
             d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.7 7.7 0 0 1 8 4.77c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"
           />
@@ -29,44 +39,65 @@
       </a>
     </header>
 
-    <div id="toast" class="toast" hidden role="status"></div>
+    <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
 
-    <label class="toggle-row">
-      <span>On</span>
-      <input type="checkbox" id="enabled" checked />
-      <span class="switch" aria-hidden="true"></span>
-    </label>
+    <section class="block" aria-labelledby="current-heading">
+      <h2 id="current-heading" class="label">This page</h2>
+      <div class="row">
+        <span id="this-site-host" class="row-title">…</span>
+        <button type="button" id="add-this-site" class="btn btn-accent" disabled>
+          Add
+        </button>
+      </div>
+    </section>
 
-    <section class="sites">
-      <label for="site-input">Sites</label>
-      <button type="button" id="add-this-site" class="this-site-btn" disabled>
-        <span class="this-site-title">Add this site</span>
-        <span id="this-site-host" class="this-site-host"></span>
+    <section class="block" aria-labelledby="pack-heading">
+      <h2 id="pack-heading" class="label">Paste sites</h2>
+      <p class="hint" id="pack-desc">For coded lists (FMHY and similar).</p>
+      <p class="pack-line" id="pack-preview" aria-live="polite"></p>
+      <button
+        type="button"
+        id="add-paste-sites"
+        class="btn btn-full"
+        aria-describedby="pack-desc pack-preview"
+      >
+        Add these
       </button>
-      <form class="site-row" id="site-form">
+    </section>
+
+    <section class="block" aria-labelledby="list-heading">
+      <h2 id="list-heading" class="label">Your sites</h2>
+      <ul id="site-list" class="site-list" aria-label="Sites where Plainly is on"></ul>
+      <form class="row row-form" id="site-form" aria-label="Add another site">
+        <label class="sr-only" for="site-input">Site name</label>
         <input
           id="site-input"
           type="text"
-          placeholder="or paste example.com / URL"
+          placeholder="example.com"
           spellcheck="false"
           autocomplete="off"
         />
-        <button type="submit" class="add-btn" title="Add site">Add</button>
+        <button type="submit" class="btn">Add</button>
       </form>
-      <p id="site-error" class="site-error" hidden></p>
-      <ul id="site-list" class="site-list"></ul>
+      <p id="site-error" class="site-error" hidden role="alert"></p>
     </section>
 
-    <section class="manual">
-      <label for="input">Try a code</label>
-      <textarea
-        id="input"
-        rows="2"
-        placeholder="Paste coded text…"
-        spellcheck="false"
-      ></textarea>
-      <div id="output" class="output" hidden></div>
-    </section>
+    <details class="try" id="try-panel">
+      <summary class="try-summary">
+        <span class="label">Try text</span>
+        <span class="try-chevron" aria-hidden="true"></span>
+      </summary>
+      <div class="try-body">
+        <label class="sr-only" for="input">Paste coded text</label>
+        <textarea
+          id="input"
+          rows="2"
+          placeholder="Paste coded text…"
+          spellcheck="false"
+        ></textarea>
+        <div id="output" class="output" hidden role="status" aria-live="polite"></div>
+      </div>
+    </details>
 
     <script src="src/decoder.js"></script>
     <script src="popup.js"></script>

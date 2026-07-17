@@ -1,8 +1,8 @@
 {
   "name": "plainly",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "private": true,
-  "description": "Plainly — coded text to plain text on Reddit and sites you add",
+  "description": "Plainly — coded text to plain text on Reddit and sites you add (Chrome + Firefox)",
   "homepage": "https://github.com/27mfp/plainly",
   "repository": {
     "type": "git",
@@ -13,13 +13,16 @@
   },
   "scripts": {
     "test": "node test/decoder.test.js",
-    "icons": "node scripts/generate-icons.js"
+    "icons": "node scripts/generate-icons.js",
+    "package:firefox": "node scripts/package-firefox.js"
   },
   "engines": {
     "node": ">=18"
   },
   "keywords": [
     "chrome-extension",
+    "firefox-extension",
+    "webextension",
     "reddit",
     "base64",
     "plain-text"

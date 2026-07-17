@@ -13,7 +13,7 @@
   <a href="./README.pt-PT.md">Português (PT)</a>
   ·
   <a href="https://github.com/27mfp/plainly"><img alt="GitHub" src="https://img.shields.io/badge/github-27mfp%2Fplainly-18181b?style=flat-square" /></a>
-  <img alt="Version" src="https://img.shields.io/badge/version-1.4.0-18181b?style=flat-square" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.6.0-18181b?style=flat-square" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-52525b?style=flat-square" />
 </p>
 
@@ -28,9 +28,10 @@
 Some posts hide links or messages as long coded strings. **Plainly** finds them and shows the readable version next to the code.
 
 - Works automatically on Reddit  
-- You can add more sites yourself  
+- You can add more sites yourself, or use **Paste sites** for common list pages (rentry, pastebin, FMHY, …)  
 - If the plain text is a link, you can open it  
 - Copy with one click  
+- Nested codes are unwrapped when needed  
 - Nothing is sent to any server — see [PRIVACY.md](./PRIVACY.md)
 
 ## Example
@@ -45,12 +46,23 @@ Plainly shows: [`https://github.com/27mfp/plainly`](https://github.com/27mfp/pla
 
 ## Install
 
-1. Open Chrome → `chrome://extensions`  
+### Chrome / Edge / Brave
+
+1. Open `chrome://extensions` (or `edge://extensions`)  
 2. Turn on **Developer mode**  
 3. Click **Load unpacked** and pick this folder  
 4. Open Reddit (or a site you added) and **refresh** the tab  
 
-Pin Plainly from Chrome’s puzzle menu if you want the icon always visible.
+Pin Plainly from the extensions puzzle menu if you want the icon always visible.
+
+### Firefox
+
+1. Open `about:debugging#/runtime/this-firefox`  
+2. Click **Load Temporary Add-on…**  
+3. Pick `manifest.json` in this folder  
+4. Open Reddit (or a site you added) and **refresh** the tab  
+
+Temporary add-ons are removed when Firefox restarts. For a permanent install, pack and sign the extension (or install from [addons.mozilla.org](https://addons.mozilla.org) when published).
 
 **Code:** [github.com/27mfp/plainly](https://github.com/27mfp/plainly)
 
@@ -61,26 +73,29 @@ Pin Plainly from Chrome’s puzzle menu if you want the icon always visible.
 | Read plain text | Look for the grey tag next to a coded line |
 | Open a link | Click the address in the tag |
 | Copy the plain text | Click the copy icon on the tag |
-| Use the site you’re on | Open the popup → **Add this site** → allow → **refresh** |
-| Add another site | Popup → type `example.com` → **Add** → allow → **refresh** |
+| Use the site you’re on | Popup → **This page** → **Add** → allow → **refresh** |
+| FMHY / paste lists | Popup → **Paste sites** → **Add these** → allow → **refresh** |
+| Add another site | Popup → **Your sites** → type `example.com` → **Add** → allow → **refresh** |
 | Remove a site | Popup → **×** next to the name |
 | Turn Plainly off | Popup → **On** switch |
-| Check a code by hand | Paste it under **Try a code** |
+| Check text by hand | Popup → open **Try text** → paste |
 
 ## For developers
 
 ```bash
 npm test
 npm run icons
+npm run package:firefox   # AMO zip in project root
 ```
 
 ```text
 plainly/
-├── manifest.json      Chrome extension settings
+├── manifest.json      Chrome (load this folder) + base for Firefox
 ├── icons/             App icons
-├── docs/demo.png      Demo image
+├── docs/              Demo images
 ├── src/               Extension code
 ├── popup.*            Toolbar menu
+├── scripts/           Icons + Firefox packaging
 └── test/              Tests and local preview page
 ```
 

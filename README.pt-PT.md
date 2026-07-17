@@ -26,9 +26,10 @@
 Alguns posts escondem links ou mensagens em códigos longos. O **Plainly** encontra-os e mostra a versão legível ao lado.
 
 - Funciona sozinho no Reddit  
-- Podes acrescentar mais sites  
+- Podes acrescentar mais sites, ou usar **Paste sites** para páginas de listas (rentry, pastebin, FMHY, …)  
 - Se o texto for um link, podes abri-lo  
 - Copiar com um clique  
+- Códigos em camadas são desfeitos quando faz sentido  
 - Nada é enviado para servidores — ver [PRIVACY.md](./PRIVACY.md)
 
 ## Exemplo
@@ -43,12 +44,23 @@ O Plainly mostra: `https://github.com/27mfp/plainly`
 
 ## Instalar
 
-1. Abre o Chrome → `chrome://extensions`  
+### Chrome / Edge / Brave
+
+1. Abre `chrome://extensions` (ou `edge://extensions`)  
 2. Liga o **Modo de programador**  
 3. Clica em **Carregar expandida** e escolhe esta pasta  
 4. Abre o Reddit (ou um site que tenhas adicionado) e **atualiza** o separador  
 
-Podes fixar o Plainly no menu do puzzle do Chrome.
+Podes fixar o Plainly no menu do puzzle das extensões.
+
+### Firefox
+
+1. Abre `about:debugging#/runtime/this-firefox`  
+2. Clica em **Carregar complemento temporário…**  
+3. Escolhe o `manifest.json` desta pasta  
+4. Abre o Reddit (ou um site que tenhas adicionado) e **atualiza** o separador  
+
+Complementos temporários são removidos quando o Firefox reinicia. Para instalação permanente, assina o complemento (ou instala em [addons.mozilla.org](https://addons.mozilla.org) quando publicado).
 
 **Código:** [github.com/27mfp/plainly](https://github.com/27mfp/plainly)
 
@@ -59,11 +71,12 @@ Podes fixar o Plainly no menu do puzzle do Chrome.
 | Ler o texto simples | Procura a etiqueta cinzenta ao lado do código |
 | Abrir um link | Clica no endereço na etiqueta |
 | Copiar | Clica no ícone de copiar |
-| Usar o site em que estás | Menu → **Add this site** → permitir → **atualizar** a página |
-| Adicionar outro site | Menu → escreve `example.com` → **Add** → permitir → **atualizar** |
+| Usar o site em que estás | Menu → **This page** → **Add** → permitir → **atualizar** |
+| Listas tipo FMHY / pastes | Menu → **Paste sites** → **Add these** → permitir → **atualizar** |
+| Adicionar outro site | Menu → **Your sites** → escreve `example.com` → **Add** → permitir → **atualizar** |
 | Remover um site | Menu → **×** ao lado do nome |
 | Desligar | Menu → interruptor **On** |
-| Testar um código à mão | Cola em **Try a code** |
+| Testar texto à mão | Menu → abre **Try text** → cola |
 
 ## Para programadores
 

@@ -124,5 +124,31 @@ test("decodes plain text message", () => {
   assert.strictEqual(D.decode(b64), msg);
 });
 
+test("unwraps nested base64 (2 layers) to URL", () => {
+  const url = "https://github.com/27mfp/plainly";
+  const inner = Buffer.from(url, "utf8").toString("base64");
+  const outer = Buffer.from(inner, "utf8").toString("base64");
+  assert.strictEqual(D.decodeOnce(outer), inner);
+  assert.strictEqual(D.decode(outer), url);
+});
+
+test("unwraps nested base64 (3 layers) to plain text", () => {
+  const msg = "nested-plainly-ok";
+  let layer = msg;
+  for (let i = 0; i < 3; i++) {
+    layer = Buffer.from(layer, "utf8").toString("base64");
+  }
+  assert.strictEqual(D.decode(layer), msg);
+});
+
+test("findDecodings unwraps nested hits", () => {
+  const url = "https://megatuga.io/";
+  const inner = Buffer.from(url, "utf8").toString("base64");
+  const outer = Buffer.from(inner, "utf8").toString("base64");
+  const hits = D.findDecodings(`check this:\n\n${outer}\n`);
+  assert.ok(hits.length >= 1);
+  assert.strictEqual(hits[0].decoded, url);
+});
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed > 0 ? 1 : 0);

@@ -9,6 +9,8 @@
   if (globalThis.__plainlyLoaded) return;
   globalThis.__plainlyLoaded = true;
 
+  const api = globalThis.browser ?? globalThis.chrome;
+
   const D = globalThis.Base64Decoder;
   if (!D) {
     console.error("[Plainly] decoder.js not loaded");
@@ -35,14 +37,14 @@
 
   // ---- settings ----
   try {
-    chrome.storage.sync.get({ [ENABLED_KEY]: true }, (data) => {
-      if (chrome.runtime.lastError) {
+    Promise.resolve(api.storage.sync.get({ [ENABLED_KEY]: true }))
+      .then((data) => {
+        enabled = data[ENABLED_KEY] !== false;
+        if (enabled) start();
+      })
+      .catch(() => {
         start();
-        return;
-      }
-      enabled = data[ENABLED_KEY] !== false;
-      if (enabled) start();
-    });
+      });
 
     storageListener = (changes, area) => {
       if (area !== "sync" || !changes[ENABLED_KEY]) return;
@@ -55,7 +57,7 @@
         removeAllDecorations();
       }
     };
-    chrome.storage.onChanged.addListener(storageListener);
+    api.storage.onChanged.addListener(storageListener);
   } catch {
     // storage may be unavailable in file:// tests — default on
     start();
@@ -241,7 +243,7 @@
     const badge = document.createElement("span");
     badge.className = BADGE_CLASS;
     badge.setAttribute("role", "note");
-    badge.setAttribute("title", "Plain text version");
+    badge.setAttribute("title", "Readable version");
 
     const url = asHttpUrl(hit.decoded);
     let decodedEl;
@@ -263,7 +265,7 @@
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
     copyBtn.className = "b64d-copy";
-    copyBtn.setAttribute("aria-label", "Copy plain text");
+    copyBtn.setAttribute("aria-label", "Copy readable text");
     copyBtn.setAttribute("title", "Copy");
     copyBtn.innerHTML =
       '<svg class="b64d-icon-copy" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">' +

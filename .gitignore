@@ -7,5 +7,6 @@ Thumbs.db
 *.crx
 *.pem
 dist/
+dist-firefox/
 .chrome-extension-key.pem
 *.zip

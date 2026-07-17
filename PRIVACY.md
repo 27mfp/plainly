@@ -11,7 +11,7 @@ No analytics, no tracking, no accounts, no online “decode” service.
 
 | What | Where | Why |
 | --- | --- | --- |
-| On / off | Chrome’s own storage (can sync with your Google account if you use sync) | Remember if tags should show |
+| On / off | Browser storage (can sync with your browser account if you use sync) | Remember if tags should show |
 | Sites you added | Same storage | Remember which sites to run on |
 
 Coded lines are turned into plain text **only in your browser**.

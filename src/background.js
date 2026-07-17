@@ -1,10 +1,14 @@
 /**
- * Background service worker.
+ * Background script (Chrome service worker / Firefox event page).
  *
  * Reddit: static content_scripts in manifest.json.
- * Extra sites: inject on demand via chrome.scripting (no registerContentScripts —
+ * Extra sites: inject on demand via scripting (no registerContentScripts —
  * that API was throwing "Duplicate script ID 'plainly-extra-sites'" under Chrome).
+ *
+ * Cross-browser: use browser.* (promises) when available, else chrome.*.
  */
+const api = globalThis.browser ?? globalThis.chrome;
+
 const SITES_KEY = "extraSites";
 const PENDING_KEY = "pendingSite";
 const LAST_ADDED_KEY = "lastSiteAdded";
@@ -16,19 +20,19 @@ let cachedEnabled = true;
 
 // ── Boot ─────────────────────────────────────────────────────────────
 
-chrome.runtime.onInstalled.addListener(() => {
+api.runtime.onInstalled.addListener(() => {
   purgeLegacyRegisteredScripts()
     .then(() => refreshCache())
     .catch((e) => console.error("[Plainly] onInstalled", e));
 });
 
-chrome.runtime.onStartup.addListener(() => {
+api.runtime.onStartup.addListener(() => {
   refreshCache().catch((e) => console.error("[Plainly] onStartup", e));
 });
 
 refreshCache().catch(() => {});
 
-chrome.storage.onChanged.addListener((changes, area) => {
+api.storage.onChanged.addListener((changes, area) => {
   if (area !== "sync") return;
   if (changes[SITES_KEY]) {
     cachedSites = normalizeSites(changes[SITES_KEY].newValue);
@@ -38,20 +42,20 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
 });
 
-chrome.permissions.onAdded.addListener((perms) => {
+api.permissions.onAdded.addListener((perms) => {
   handleOriginsGranted(perms.origins || []).catch((e) =>
     console.error("[Plainly] onAdded", e)
   );
 });
 
 // Inject into extra sites when a tab finishes loading (SPA first paint + full loads).
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+api.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete") return;
   if (!tab || !tab.url) return;
   maybeInjectTab(tabId, tab.url).catch(() => {});
 });
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+api.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (!msg || typeof msg !== "object") return;
 
   if (msg.type === "sync-scripts") {
@@ -81,17 +85,17 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 
 async function purgeLegacyRegisteredScripts() {
   try {
-    const all = await chrome.scripting.getRegisteredContentScripts();
+    const all = await api.scripting.getRegisteredContentScripts();
     if (!all || !all.length) return;
     const ids = all
       .map((s) => s.id)
       .filter((id) => id === LEGACY_SCRIPT_ID || String(id).startsWith("plainly-"));
     if (ids.length) {
-      await chrome.scripting.unregisterContentScripts({ ids });
+      await api.scripting.unregisterContentScripts({ ids });
     }
   } catch {
     try {
-      await chrome.scripting.unregisterContentScripts({
+      await api.scripting.unregisterContentScripts({
         ids: [LEGACY_SCRIPT_ID],
       });
     } catch {
@@ -114,7 +118,7 @@ function normalizeSites(list) {
 }
 
 async function refreshCache() {
-  const data = await chrome.storage.sync.get({
+  const data = await api.storage.sync.get({
     [SITES_KEY]: [],
     enabled: true,
   });
@@ -131,7 +135,7 @@ async function getExtraSites() {
 async function saveExtraSites(sites) {
   const unique = normalizeSites(sites);
   cachedSites = unique;
-  await chrome.storage.sync.set({ [SITES_KEY]: unique });
+  await api.storage.sync.set({ [SITES_KEY]: unique });
   return unique;
 }
 
@@ -189,7 +193,7 @@ async function maybeInjectTab(tabId, url) {
 async function injectIntoTab(tabId) {
   if (typeof tabId !== "number") return;
   try {
-    await chrome.scripting.insertCSS({
+    await api.scripting.insertCSS({
       target: { tabId },
       files: ["src/content.css"],
     });
@@ -198,7 +202,7 @@ async function injectIntoTab(tabId) {
     return;
   }
   try {
-    await chrome.scripting.executeScript({
+    await api.scripting.executeScript({
       target: { tabId },
       files: ["src/decoder.js", "src/content.js"],
     });
@@ -212,7 +216,7 @@ async function injectIntoOpenTabs(origin) {
   const pattern = originToMatch(origin);
   let tabs = [];
   try {
-    tabs = await chrome.tabs.query({ url: [pattern, origin + "/*", origin] });
+    tabs = await api.tabs.query({ url: [pattern, origin + "/*", origin] });
   } catch {
     return;
   }
@@ -225,6 +229,28 @@ async function injectIntoOpenTabs(origin) {
 
 // ── Add-site finalization (permission dialog) ────────────────────────
 
+/** Pending may be one site or a pack (array of { origin, pattern }). */
+function pendingEntries(pending) {
+  if (!pending || typeof pending !== "object") return [];
+  if (Array.isArray(pending.sites) && pending.sites.length) {
+    return pending.sites
+      .filter((s) => s && typeof s.origin === "string")
+      .map((s) => ({
+        origin: s.origin,
+        pattern: s.pattern || s.origin.replace(/\/$/, "") + "/*",
+      }));
+  }
+  if (pending.origin) {
+    return [
+      {
+        origin: pending.origin,
+        pattern: pending.pattern || pending.origin.replace(/\/$/, "") + "/*",
+      },
+    ];
+  }
+  return [];
+}
+
 async function handleOriginsGranted(patterns) {
   if (!patterns.length) return;
 
@@ -234,19 +260,21 @@ async function handleOriginsGranted(patterns) {
     if (origin && !isRedditOrigin(origin)) fromPerms.push(origin);
   }
 
-  const local = await chrome.storage.local.get({ [PENDING_KEY]: null });
+  const local = await api.storage.local.get({ [PENDING_KEY]: null });
   const pending = local[PENDING_KEY];
-  if (pending && pending.origin && !isRedditOrigin(pending.origin)) {
-    fromPerms.push(pending.origin);
+  for (const entry of pendingEntries(pending)) {
+    if (entry.origin && !isRedditOrigin(entry.origin)) {
+      fromPerms.push(entry.origin);
+    }
   }
   if (!fromPerms.length) return;
 
   const current = await getExtraSites();
-  const newly = fromPerms.filter((o) => !current.includes(o));
   const next = [...new Set([...current, ...fromPerms])];
+  const newly = next.filter((o) => !current.includes(o));
   await saveExtraSites(next);
-  await chrome.storage.local.remove(PENDING_KEY);
-  if (newly.length) await markSiteAdded(newly[newly.length - 1]);
+  await api.storage.local.remove(PENDING_KEY);
+  if (newly.length) await markSitesAdded(newly);
 
   for (const origin of fromPerms) {
     await injectIntoOpenTabs(origin);
@@ -254,44 +282,63 @@ async function handleOriginsGranted(patterns) {
 }
 
 async function finalizePending() {
-  const local = await chrome.storage.local.get({ [PENDING_KEY]: null });
+  const local = await api.storage.local.get({ [PENDING_KEY]: null });
   const pending = local[PENDING_KEY];
   let sites = await getExtraSites();
 
-  if (pending && pending.pattern) {
-    let granted = false;
-    try {
-      granted = await chrome.permissions.contains({
-        origins: [pending.pattern],
-      });
-    } catch {
-      granted = false;
+  const entries = pendingEntries(pending);
+  if (entries.length) {
+    const grantedOrigins = [];
+    for (const entry of entries) {
+      let granted = false;
+      try {
+        granted = await api.permissions.contains({
+          origins: [entry.pattern],
+        });
+      } catch {
+        granted = false;
+      }
+      if (granted && entry.origin && !isRedditOrigin(entry.origin)) {
+        grantedOrigins.push(entry.origin);
+      }
     }
 
-    if (granted && pending.origin && !isRedditOrigin(pending.origin)) {
-      const wasNew = !sites.includes(pending.origin);
-      if (wasNew) {
-        sites = await saveExtraSites([...sites, pending.origin]);
-        await markSiteAdded(pending.origin);
+    if (grantedOrigins.length) {
+      const newly = grantedOrigins.filter((o) => !sites.includes(o));
+      if (newly.length) {
+        sites = await saveExtraSites([...sites, ...newly]);
+        await markSitesAdded(newly);
       }
-      await chrome.storage.local.remove(PENDING_KEY);
-      await injectIntoOpenTabs(pending.origin);
-    } else if (!granted && pending.at && Date.now() - pending.at > 10 * 60 * 1000) {
-      await chrome.storage.local.remove(PENDING_KEY);
+      await api.storage.local.remove(PENDING_KEY);
+      for (const origin of grantedOrigins) {
+        await injectIntoOpenTabs(origin);
+      }
+    } else if (pending.at && Date.now() - pending.at > 10 * 60 * 1000) {
+      await api.storage.local.remove(PENDING_KEY);
     }
   }
 
   return sites;
 }
 
-async function markSiteAdded(origin) {
-  let host = origin;
+async function markSitesAdded(origins) {
+  if (!origins || !origins.length) return;
+  const list = origins.filter(Boolean);
+  let host = list[0];
   try {
-    host = new URL(origin).host;
+    host = new URL(list[0]).host;
   } catch {
     /* keep */
   }
-  await chrome.storage.local.set({
-    [LAST_ADDED_KEY]: { origin, host, at: Date.now() },
+  if (list.length > 1) {
+    host = list.length + " sites";
+  }
+  await api.storage.local.set({
+    [LAST_ADDED_KEY]: {
+      origin: list[list.length - 1],
+      host,
+      count: list.length,
+      at: Date.now(),
+    },
   });
 }
