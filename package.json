@@ -27,5 +27,8 @@
     "base64",
     "plain-text"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "yazl": "^3.3.1"
+  }
 }

@@ -4,7 +4,7 @@
  */
 const fs = require("fs");
 const path = require("path");
-const { execFileSync } = require("child_process");
+const yazl = require("yazl");
 
 const root = path.resolve(__dirname, "..");
 const dist = path.join(root, "dist-firefox");
@@ -25,6 +25,15 @@ function copyDir(src, dest) {
     const to = path.join(dest, ent.name);
     if (ent.isDirectory()) copyDir(from, to);
     else fs.copyFileSync(from, to);
+  }
+}
+
+function addZipFiles(zip, dir, prefix = "") {
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    const from = path.join(dir, ent.name);
+    const archivePath = path.posix.join(prefix, ent.name);
+    if (ent.isDirectory()) addZipFiles(zip, from, archivePath);
+    else zip.addFile(from, archivePath);
   }
 }
 
@@ -58,22 +67,11 @@ fs.writeFileSync(
 
 rm(zipPath);
 
-// Prefer PowerShell Compress-Archive on Windows; fall back to tar
-const isWin = process.platform === "win32";
-if (isWin) {
-  execFileSync(
-    "powershell.exe",
-    [
-      "-NoProfile",
-      "-Command",
-      `Compress-Archive -Path '${dist.replace(/'/g, "''")}\\*' -DestinationPath '${zipPath.replace(/'/g, "''")}' -Force`,
-    ],
-    { stdio: "inherit" }
-  );
-} else {
-  execFileSync("tar", ["-a", "-cf", zipPath, "-C", dist, "."], {
-    stdio: "inherit",
-  });
-}
+// Write ZIP entry names explicitly with POSIX separators, as required by AMO.
+const zip = new yazl.ZipFile();
+const output = fs.createWriteStream(zipPath);
+zip.outputStream.pipe(output);
+addZipFiles(zip, dist);
+zip.end();
 
-console.log("Wrote", zipPath);
+output.on("close", () => console.log("Wrote", zipPath));
